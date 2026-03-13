@@ -117,7 +117,7 @@ def driver_setup(request):
     appium_options.set_capability("appium:platformVersion", PLATFORM_VERSION)
     appium_options.set_capability("appium:appPackage", APP_PACKAGE)
     appium_options.set_capability("appium:appActivity", APP_ACTIVITY)
-    appium_options.set_capability("appium:noReset", True)
+    appium_options.set_capability("appium:noReset", False)
     appium_options.set_capability("appium:forceAppLaunch", True)
     appium_options.set_capability("appium:autoGrantPermissions", True)
     appium_options.set_capability("appium:newCommandTimeout", 300)
@@ -149,7 +149,7 @@ def driver_setup(request):
             print(f"\nRunning teardown for test: {request.node.name}...")
             driver.quit()
             print("App closed.")
-        time.sleep(10)
+        time.sleep(5)
 
 
 # --- Reusable Utility Helpers ---
@@ -158,7 +158,7 @@ def driver_setup(request):
 def _login(driver, wait, phone_number, otp):
     """Login using phone number keypad on Android."""
     print("Login Initiated")
-    time.sleep(3)
+    time.sleep(5)
 
     # 1. Handle 'Continue' or 'Log In' prompt
     try:
@@ -169,7 +169,7 @@ def _login(driver, wait, phone_number, otp):
 
     # 2. Enter Phone Number
     with allure.step("Entering phone number digits"):
-
+        time.sleep(5)
         for digit in phone_number:
             keycode = 7 + int(digit)
             driver.press_keycode(keycode)
@@ -290,7 +290,7 @@ def _search(driver, search_term):
     """Types a search term using the on-screen keyboard."""
     for char in search_term:
         key_to_press = "Space" if char == ' ' else char.upper()
-        xpath_expression = f'//*[@text="{key_to_press}"]'
+        xpath_expression = f'//*[@text="{key_to_press}" or @content-desc="{key_to_press}"]'
         try:
             driver.find_element(AppiumBy.XPATH, xpath_expression).click()
         except Exception as e:
@@ -315,17 +315,32 @@ def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
 def _create_profile(driver, wait):
     """Creates a profile for a fresh/new user."""
     profile_input = wait.until(
-        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(@text,"Your Name")]'))
+        EC.visibility_of_element_located((AppiumBy.XPATH,
+        '//android.widget.EditText[@resource-id="in.startv.hotstar:id/et_user_name"]'))
     )
     profile_input.click()
-    _search(driver, "TEST")
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Create Your Profile"]'))).click()
-    time.sleep(2)
+    username = wait.until(
+        EC.visibility_of_element_located((AppiumBy.XPATH,
+                                          '//android.widget.EditText[@resource-id="in.startv.hotstar:id/et_name"]'))
+    )
+    username.send_keys("Test")
+
+    time.sleep(1)
+    driver.press_keycode(KEYCODE_DPAD_DOWN)
+    driver.press_keycode(KEYCODE_DPAD_DOWN)
+    driver.press_keycode(KEYCODE_DPAD_DOWN)
+    driver.press_keycode(KEYCODE_DPAD_LEFT)
+    driver.press_keycode(KEYCODE_DPAD_CENTER)
+
+    # wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,'//android.view.ViewGroup[@resource-id="in.startv.hotstar:id/btn_continue"]'))).click()
+    time.sleep(5)
     lang_kannada = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Kannada"]'))
+        EC.element_to_be_clickable(
+            (AppiumBy.XPATH, '(//android.widget.ImageView[@resource-id="in.startv.hotstar:id/heart_frame"])[8]')
+        )
     )
     lang_kannada.click()
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Continue"]'))).click()
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.view.ViewGroup[@resource-id="in.startv.hotstar:id/btn_continue"]'))).click()
 
 
 # --- Test Cases ---
@@ -343,17 +358,17 @@ def test_case_RLT1487(driver_setup):
     _login(driver, wait, fresh_phone, fresh_otp)
     _create_profile(driver, wait)
     time.sleep(2)
+    driver.press_keycode(KEYCODE_DPAD_LEFT)
 
     with allure.step("Validate Side Nav is displayed"):
         nav_items = {
-            "My Space": '//*[@text="My Space" or @content-desc="My Space"]',
-            "Home": '//*[@text="Home" or @content-desc="Home"]',
-            "Search": '//*[@text="Search" or @content-desc="Search"]',
-            "TV": '//*[@text="TV" or @content-desc="TV"]',
-            "Movies": '//*[@text="Movies" or @content-desc="Movies"]',
-            "Sports": '//*[@text="Sports" or @content-desc="Sports"]',
-            "Sparks": '//*[@text="Sparks" or @content-desc="Sparks"]',
-            "Categories": '//*[@text="Categories" or @content-desc="Categories"]',
+            "My Space": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="My Space"]',
+            "Home": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Home"]',
+            "Search": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Search"]',
+            "TV": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="TV"]',
+            "Movies": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Movies"]',
+            "Sports": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Sports"]',
+            "Categories": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Categories"]'
         }
         for name, xpath in nav_items.items():
             btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, xpath)))
@@ -361,7 +376,7 @@ def test_case_RLT1487(driver_setup):
             print(f"{name} side-nav is available")
 
     with allure.step("Tap on Subscribe in My Space"):
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="My Space" or @content-desc="My Space"]'))).click()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="My Space"]'))).click()
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Subscribe"]'))).click()
         validate_psp_page_visible(wait)
         driver.press_keycode(KEYCODE_BACK)
