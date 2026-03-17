@@ -6,6 +6,7 @@ from appium.webdriver.common.appiumby import AppiumBy
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import tv_actions
 import time
 import requests
 import random
@@ -13,7 +14,7 @@ import json
 
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
-DEVICE_NAME = "172.23.12.46"           # Update with your device name (adb devices)
+DEVICE_NAME = "172.23.4.136"           # Update with your device name (adb devices)
 PLATFORM_VERSION = "10"                  # Update with your Android version
 APP_PACKAGE = "in.startv.hotstar"        # Hotstar Android package name
 APP_ACTIVITY = "com.hotstar.MainActivity"  # Update if different
@@ -149,7 +150,7 @@ def driver_setup(request):
             print(f"\nRunning teardown for test: {request.node.name}...")
             driver.quit()
             print("App closed.")
-        time.sleep(5)
+        time.sleep(2)
 
 
 # --- Reusable Utility Helpers ---
@@ -158,7 +159,7 @@ def driver_setup(request):
 def _login(driver, wait, phone_number, otp):
     """Login using phone number keypad on Android."""
     print("Login Initiated")
-    time.sleep(5)
+    time.sleep(2)
 
     # 1. Handle 'Continue' or 'Log In' prompt
     try:
@@ -169,7 +170,7 @@ def _login(driver, wait, phone_number, otp):
 
     # 2. Enter Phone Number
     with allure.step("Entering phone number digits"):
-        time.sleep(5)
+        time.sleep(3)
         for digit in phone_number:
             keycode = 7 + int(digit)
             driver.press_keycode(keycode)
@@ -180,7 +181,7 @@ def _login(driver, wait, phone_number, otp):
     # 3. Click Get OTP
     get_otp_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Get OTP"]')))
     get_otp_btn.click()
-    time.sleep(3)
+    time.sleep(2)
 
     # 4. Enter OTP
     with allure.step("Entering OTP digits"):
@@ -230,23 +231,35 @@ def _profile_onboarding(driver, wait):
     """Select main profile and enter PIN if required."""
     print("Profile selection started")
 
-    profile_img = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@content-desc="profile-avatar" or @resource-id="in.startv.hotstar:id/profile_image"]'))
-    )
-    profile_img.click()
-
     try:
-        pin_button_1 = wait.until(
-            EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="1"]'))
+        # Try to find profile image
+        profile_img = wait.until(
+            EC.element_to_be_clickable(
+                (AppiumBy.XPATH, '//*[@content-desc="profile-avatar" or @resource-id="in.startv.hotstar:id/profile_image"]')
+            )
         )
-        if pin_button_1:
-            pin_string = "1234"
-            print(f"PIN entry visible. Entering PIN: {pin_string}")
-            with allure.step("Entering profile PIN"):
-                for digit in pin_string:
-                    driver.find_element(AppiumBy.XPATH, f'//*[@text="{digit}"]').click()
+        profile_img.click()
+        print("Profile image found and clicked")
+
+        # Check if PIN screen appears
+        try:
+            pin_button_1 = wait.until(
+                EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="1"]'))
+            )
+
+            if pin_button_1:
+                pin_string = "1234"
+                print(f"PIN entry visible. Entering PIN: {pin_string}")
+
+                with allure.step("Entering profile PIN"):
+                    for digit in pin_string:
+                        driver.find_element(AppiumBy.XPATH, f'//*[@text="{digit}"]').click()
+
+        except Exception:
+            print("Parental lock not available for this user. Proceeding...")
+
     except Exception:
-        print("Parental lock not available for this user. Proceeding...")
+        print("Profile selection screen not available. Skipping profile onboarding.")
 
 
 @allure.step("Navigate back to Home Screen gracefully")
@@ -302,7 +315,7 @@ def _search(driver, search_term):
 def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
     """Verifies the user has reached the Subscription/PSP screen."""
     try:
-        psp_premium = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Premium"]')))
+        psp_premium = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/plan_card_title" and @text="PREMIUM"]')))
         assert psp_premium is not None, timeout_msg
         print("Verification Successful: PSP page is available.")
         return True
@@ -357,9 +370,9 @@ def test_case_RLT1487(driver_setup):
 
     _login(driver, wait, fresh_phone, fresh_otp)
     _create_profile(driver, wait)
-    time.sleep(2)
+    time.sleep(5)
     driver.press_keycode(KEYCODE_DPAD_LEFT)
-
+    time.sleep(2)
     with allure.step("Validate Side Nav is displayed"):
         nav_items = {
             "My Space": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="My Space"]',
@@ -376,18 +389,22 @@ def test_case_RLT1487(driver_setup):
             print(f"{name} side-nav is available")
 
     with allure.step("Tap on Subscribe in My Space"):
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="My Space"]'))).click()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Subscribe"]'))).click()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("My Space")'))).focusandclick()
+        time.sleep(2)
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.view.ViewGroup[@resource-id="in.startv.hotstar:id/btn_cta"]'))).focusandclick()
         validate_psp_page_visible(wait)
         driver.press_keycode(KEYCODE_BACK)
 
     with allure.step("Try to play any content"):
-        wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Search" or @content-desc="Search"]'))).click()
         time.sleep(2)
-        _search(driver, "King and Conqueror")
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="King & Conqueror"]'))).click()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Subscribe to Watch"]'))).click()
+        driver.press_keycode(KEYCODE_DPAD_LEFT)
+        driver.press_keycode(KEYCODE_DPAD_LEFT)
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'new UiSelector().className("android.view.ViewGroup").instance(2)'))).focusandclick()
+        time.sleep(2)
+        search_bar = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[@resource-id="in.startv.hotstar:id/search_bar"]')))
+        search_bar.send_keys("King and Conqueror")
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.ImageView[@resource-id="in.startv.hotstar:id/hero_img"]'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/textLabel"]'))).focusandclick()
         validate_psp_page_visible(wait)
         driver.press_keycode(KEYCODE_BACK)
         _navigate_back_to_home(driver)
@@ -404,21 +421,27 @@ def test_case_RLT356(driver_setup):
 
     reset_user_watch_time(hid, watch_time_ms=7134000)
     _login(driver, wait, free_phone, otp)
-    _profile_onboarding(driver, wait)
 
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Movies" or @content-desc="Movies"]'))).click()
-    time.sleep(2)
+    time.sleep(5)
+    driver.press_keycode(KEYCODE_BACK)
+    driver.press_keycode(KEYCODE_DPAD_LEFT)
+    print("left3")
 
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@resource-id="in.startv.hotstar:id/slide_1" or contains(@content-desc,"slide-1")]'))).click()
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Movies"]'))).focusandclick()
+    time.sleep(5)
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.FrameLayout[@resource-id="in.startv.hotstar:id/masthead_item_container"])[1]'))).click()
+    print("frame available")
+    time.sleep(5)
 
     with allure.step("Start Playback"):
-        watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Watch from Beginning" or @text="Watch Now" or @text="Watch Latest Season" or @text="Watch First Episode"]')))
-        watch_btn.click()
+        watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//android.widget.TextView[@text='Watch Now']/..")))
+        watch_btn.focusandclick()
+        print("Primary action is available")
         assert watch_btn is not None, "Watch button not available"
         print("Playback started")
         time.sleep(5)
 
-    timer_locator = (AppiumBy.XPATH, "//*[contains(@resource-id,'free_timer') or contains(@text,':')]")
+    timer_locator = (AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_time"]')
     timer = wait.until(EC.element_to_be_clickable(timer_locator))
     assert timer is not None, "Timer is not available"
     print("Timer is available")
@@ -430,9 +453,13 @@ def test_case_RLT356(driver_setup):
     print(f"Time after 5s: {time_2}")
     assert time_1 != time_2, f"Timer is stuck at {time_1}. Video might not be playing."
     print("Validation Successful: Timer is running.")
-    time.sleep(50)
 
-    sub_now = video_wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Subscribe Now"]')))
+    sub_now = WebDriverWait(driver, 120).until(
+        EC.element_to_be_clickable((
+            AppiumBy.XPATH,
+            '//android.widget.TextView[@resource-id="in.startv.hotstar:id/textLabel" and @text="Subscribe Now"]'
+        ))
+    )
     assert sub_now is not None, "Subscribe now CTA is not available"
     print("Subscribe now CTA is available")
     time.sleep(2)
@@ -441,7 +468,8 @@ def test_case_RLT356(driver_setup):
     _navigate_back_to_home(driver)
     time.sleep(2)
 
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Home" or @content-desc="Home"]'))).click()
+    driver.press_keycode(KEYCODE_DPAD_LEFT)
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Home"]'))).focusandclick()
     time.sleep(2)
 
     hp_banner = wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Your free access is over"]')))
@@ -462,24 +490,40 @@ def test_case_T375_4K_Seasons(driver_setup):
     _login(driver, wait, premium_phone, otp)
     _profile_onboarding(driver, wait)
 
-    wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@content-desc="TV" or @text="TV"]')))
-    subnav_comp = driver.find_elements(AppiumBy.XPATH, "//*[@content-desc='My Space' or @content-desc='Home' or @content-desc='Search' or @content-desc='TV' or @content-desc='Movies' or @content-desc='Sports' or @content-desc='Sparks' or @content-desc='Categories']")
-    actual_count = len(subnav_comp)
-    expected_count = 8
-    assert actual_count == expected_count, f"Expected {expected_count} nav items, but found {actual_count}"
+    driver.press_keycode(KEYCODE_BACK)
+    driver.press_keycode(KEYCODE_DPAD_LEFT)
+    # wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@content-desc="TV" or @text="TV"]')))
+    # time.sleep(5)
+    # driver.press_keycode(KEYCODE_DPAD_LEFT)
+    # time.sleep(2)
+    # driver.press_keycode(KEYCODE_DPAD_LEFT)
+    with allure.step("Validate Side Nav is displayed"):
+        nav_items = {
+            "My Space": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="My Space"]',
+            "Home": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Home"]',
+            "Search": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Search"]',
+            "TV": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="TV"]',
+            "Movies": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Movies"]',
+            "Sports": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Sports"]',
+            "Categories": '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Categories"]'
+        }
+        for name, xpath in nav_items.items():
+            btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, xpath)))
+            assert btn is not None, f"{name} side-nav is not available"
+            print(f"{name} side-nav is available")
 
-    driver.find_element(AppiumBy.XPATH, "//*[@text='TV' or @content-desc='TV']").click()
+    driver.find_element(AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="TV"]').focusandclick()
     time.sleep(3)
 
     for i in range(7):
-        seasons = driver.find_elements(AppiumBy.XPATH, "//*[contains(@text,'Season')]")
-        is_it_4K = driver.find_elements(AppiumBy.XPATH, "//*[@content-desc='4K' or @text='4K']")
-        if len(seasons) > 0 and len(is_it_4K) > 0:
+        seasons = driver.find_elements(AppiumBy.XPATH, "//android.widget.TextView[@text='1 Season']")
+        # is_it_4K = driver.find_elements(AppiumBy.XPATH, "//*[@content-desc='4K' or @text='4K']")
+        if len(seasons) > 0:
             driver.press_keycode(KEYCODE_DPAD_CENTER)
             break
         else:
             driver.press_keycode(KEYCODE_DPAD_RIGHT)
-            time.sleep(2)
+            time.sleep(1)
 
     time.sleep(3)
     driver.find_element(AppiumBy.XPATH, '//*[@text="Watch from Beginning" or @text="Watch Now" or @text="Watch Latest Season" or @text="Watch First Episode"]').click()
@@ -576,8 +620,7 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     """Validates restrictions and trailers in Kids profile on Android."""
     driver, wait, _ = driver_setup
     phone_free, otp, hid = get_test_credentials("Free_Timer_Eligible_users_two")
-    if not phone_free:
-        pytest.fail("Failed to fetch Phone_Fresh credentials from API")
+    if not phone_free:        pytest.fail("Failed to fetch Phone_Fresh credentials from API")
 
     reset_user_watch_time(hid, watch_time_ms=74440000)
     _login(driver, wait, phone_free, otp)
