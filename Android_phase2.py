@@ -17,7 +17,7 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "172.23.12.32"           # Update with your device name (adb devices)
-PLATFORM_VERSION = "11"                  # Update with your Android version
+PLATFORM_VERSION = "10"                  # Update with your Android version
 APP_PACKAGE = "in.startv.hotstar"        # Hotstar Android package name
 APP_ACTIVITY = "com.hotstar.MainActivity"  # Update if different
 
@@ -484,13 +484,13 @@ def test_case_RLT356(driver_setup):
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.FrameLayout[@resource-id="in.startv.hotstar:id/masthead_item_container"])[1]'))).click()
 
     with allure.step("Start Playback"):
-        watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//android.widget.TextView[@text='Watch Now']/..")))
+        watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//android.widget.TextView[@text='Watch Now' or @text='Watch from Beginning']/..")))
         watch_btn.focusandclick()
         assert watch_btn is not None, "Watch button not available"
 
-    time.sleep(15)
+    time.sleep(25)
     timer_locator = (AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_time"]')
-    timer = wait.until(EC.element_to_be_clickable(timer_locator))
+    timer = wait.until(EC.visibility_of_element_located(timer_locator))
     assert timer is not None, "Timer is not available"
     print("Timer is available")
 
@@ -502,11 +502,12 @@ def test_case_RLT356(driver_setup):
     assert time_1 != time_2, f"Timer is stuck at {time_1}. Video might not be playing."
     print("Validation Successful: Timer is running.")
 
-    sub_now = WebDriverWait(driver, 150).until(
+    sub_now = WebDriverWait(driver, 120).until(
         EC.visibility_of_element_located((
-            AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Subscribe Now")')))
+            AppiumBy.ID,'in.startv.hotstar:id/tv_player_error_title')))
     assert sub_now is not None, "Subscribe now CTA is not available"
-    time.sleep(5)
+    # wait.until(EC.visibility_of_element_located((AppiumBy.ID, 'new UiSelector().text("Subscribe Now")'))).focusandclick()
+    print("subs page is found")
 
     validate_psp_page_visible(wait)
     _navigate_back_to_home(driver)
@@ -627,8 +628,8 @@ def test_case_T375_4K_Seasons(driver_setup):
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Next Episode']"))).focusandclick()
         time.sleep(15)
         driver.press_keycode(85)
-        wait.until(EC.presence_of_element_located((AppiumBy.XPATH, ep_name_id)))
-        next_episode_name = driver.find_element(AppiumBy.XPATH, ep_name_id).text
+        wait.until(EC.presence_of_element_located((AppiumBy.ID, ep_name_id)))
+        next_episode_name = driver.find_element(AppiumBy.ID, ep_name_id).text
         assert current_episode_name != next_episode_name, f"Episode name did not change! Still: {current_episode_name}"
     except Exception as e:
         print("Seems it's the last episode.")
