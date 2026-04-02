@@ -1,0 +1,15 @@
+
+Setting up driver for test: test_case_RLT1487...
+App launched successfully.
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Attempt 1/5: Home element not found. Pressing back.
+Attempt 2/5: Home element not found. Pressing back.
+Attempt 3/5: Home element not found. Pressing back.
+Attempt 4/5: Home element not found. Pressing back.
+Attempt 5/5: Home element not found. Pressing back.
+⚠️ Error during logout: Message: Failed to navigate back to the Home Screen after maximum attempts.
+
+
+Running teardown for test: test_case_RLT1487...
+App closed.

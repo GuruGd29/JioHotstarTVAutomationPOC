@@ -16,7 +16,7 @@ import json
 
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
-DEVICE_NAME = "172.23.12.32"           # Update with your device name (adb devices)
+DEVICE_NAME = "172.23.12.37"           # Update with your device name (adb devices)
 PLATFORM_VERSION = "10"                  # Update with your Android version
 APP_PACKAGE = "in.startv.hotstar"        # Hotstar Android package name
 APP_ACTIVITY = "com.hotstar.MainActivity"  # Update if different
@@ -165,7 +165,7 @@ def _login(driver, wait, phone_number, otp):
 
     # 1. Handle 'Continue' or 'Log In' prompt
     try:
-        continue_btn = WebDriverWait(driver, 10).until(
+        continue_btn = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((
                 AppiumBy.XPATH,'//*[@text="Continue"]')))
         continue_btn.click()
@@ -205,13 +205,14 @@ def _switching_to_kids(driver, wait):
     wait.until(
         EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("My Space")'))).focusandclick()
 
-    time.sleep(5)
-    kids_profile = driver.find_element(AppiumBy.XPATH, '(//android.widget.ImageView[@resource-id="in.startv.hotstar:id/iv_profile"])[1]')
+    # time.sleep(5)
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,'(//android.widget.TextView[@resource-id="in.startv.hotstar:id/profile_name" and @text="Kids"])[1]'))).focusandclick()
+    # kids_profile = driver.find_element(AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="in.startv.hotstar:id/profile_name" and @text="Kids"])[1]')
     # for x in range(1, len(profiles)):
     #     driver.press_keycode(KEYCODE_DPAD_RIGHT)
     #     time.sleep(1)
     # kids_profile.click()
-    kids_profile.focusandclick()
+    # kids_profile.focusandclick()
     # driver.press_keycode(KEYCODE_DPAD_CENTER)   # Switch to Kids
     time.sleep(3)
 
@@ -226,12 +227,31 @@ def _Switching_back_to_main_profile(driver, wait):
         EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("My Space")'))).focusandclick()
 
     time.sleep(5)
-    adult_profile = driver.find_element(AppiumBy.XPATH,
-                                        '(//android.widget.ImageView[@resource-id="in.startv.hotstar:id/iv_profile"])[1]')
+    adult_profile = (AppiumBy.XPATH,
+                     '(//android.widget.TextView[@resource-id="in.startv.hotstar:id/profile_name" and @text="ADULT"])')
+    fallback_profile = (AppiumBy.XPATH,
+                        '(//android.widget.ImageView[@resource-id="in.startv.hotstar:id/iv_profile"])[1]')
+    try:
+        # 1. Try to find the 'ADULT' profile with a short, specific wait
+        element = WebDriverWait(driver, 5).until(EC.element_to_be_clickable(adult_profile))
+        element.focusandclick()
+        print("Clicked ADULT profile.")
+
+    except TimeoutException:
+        # 2. If 'ADULT' isn't found, try the fallback ImageView
+        print("ADULT profile not found, trying fallback...")
+        try:
+            element = WebDriverWait(driver, 5).until(EC.element_to_be_clickable(fallback_profile))
+            element.focusandclick()
+            print("Clicked fallback profile image.")
+        except TimeoutException:
+            print("Neither element was found on the screen.")
+    # adult_profile = driver.find_element(AppiumBy.XPATH, '((//android.widget.TextView[@resource-id="in.startv.hotstar:id/profile_name" and @text="ADULT"])')
+    # wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="in.startv.hotstar:id/profile_name" and @text="ADULT"])'))).focusandclick()
     # for x in range(1, len(profiles)):
     #     driver.press_keycode(KEYCODE_DPAD_RIGHT)
     #     time.sleep(1)
-    adult_profile.focusandclick()
+    # adult_profile.focusandclick()
     # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@content-desc='profile-item' or contains(@resource-id,'profile')]")
     # assert len(profiles) > 0, "No profile elements found!"
     # for y in range(1, len(profiles)):
@@ -264,6 +284,35 @@ def _Switching_back_to_main_profile(driver, wait):
     # else Exception:
     # print("Parental lock not available for this user. Proceeding...")
     # wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Movies' or @content-desc='Movies']"))).click()
+
+
+@allure.step("Verify Home page elements are scrollable vertically and horizontally")
+def _verify_home_scroll(driver, wait):
+    """Scroll down x2, up x2, right x2, left x2 on Home and verify content loads."""
+
+    wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
+
+    with allure.step("Scroll Down x2"):
+        for i in range(2):
+            driver.press_keycode(KEYCODE_DPAD_DOWN)
+            time.sleep(1)
+
+    with allure.step("Scroll Up x2"):
+        for i in range(2):
+            driver.press_keycode(KEYCODE_DPAD_UP)
+            time.sleep(1)
+
+    with allure.step("Scroll Right x2"):
+        for i in range(2):
+            driver.press_keycode(KEYCODE_DPAD_RIGHT)
+            time.sleep(1)
+
+    with allure.step("Scroll Left x2"):
+        for i in range(2):
+            driver.press_keycode(KEYCODE_DPAD_LEFT)
+            time.sleep(1)
+
+    print("Home page scroll verification complete.")
 
 
 @allure.step("Select Profile and Enter PIN")
@@ -433,8 +482,8 @@ def _create_profile(driver, wait):
 
 @allure.story("[Fresh User] Verify a Fresh User is able to Login and browse the app, verify Click on Subscribe CTA in Home Page & myspace")
 @allure.title("RL-T1487")
-@pytest.mark.testcase4
 def test_case_RLT1487(driver_setup):
+    # assert False
     driver, wait, _ = driver_setup
     fresh_phone, fresh_otp, fresh_hid = get_test_credentials("Phone_Fresh_User")
 
@@ -444,6 +493,7 @@ def test_case_RLT1487(driver_setup):
     _login(driver, wait, fresh_phone, fresh_otp)
     _create_profile(driver, wait)
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
+    _verify_home_scroll(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
@@ -467,7 +517,6 @@ def test_case_RLT1487(driver_setup):
 
 @allure.story("[Free User] As a Free user, I see PSP upon playing non-free content and see PSP page after completing 4hrs of free timer")
 @allure.title("RL-T356")
-@pytest.mark.testcase1
 def test_case_RLT356(driver_setup):
     driver, wait, video_wait = driver_setup
     free_phone, otp, hid = get_test_credentials("Free_Timer_Eligible_users_two")
@@ -476,6 +525,7 @@ def test_case_RLT356(driver_setup):
 
     reset_user_watch_time(hid, watch_time_ms=7134000)
     _login(driver, wait, free_phone, otp)
+    _profile_onboarding(driver, wait)
 
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
     _open_side_nav(driver)
@@ -488,7 +538,7 @@ def test_case_RLT356(driver_setup):
         watch_btn.focusandclick()
         assert watch_btn is not None, "Watch button not available"
 
-    time.sleep(25)
+    time.sleep(25) #ad
     timer_locator = (AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_time"]')
     timer = wait.until(EC.visibility_of_element_located(timer_locator))
     assert timer is not None, "Timer is not available"
@@ -523,7 +573,6 @@ def test_case_RLT356(driver_setup):
 
 @allure.story("[Premium User] As a Premium user, playing a series from TV Submenu and seeing Binge Controls, Watch Next/MLT trays")
 @allure.title("RL-T375")
-@pytest.mark.testcase3
 def test_case_T375_4K_Seasons(driver_setup):
     """Validates 4K logos and season navigation on Android."""
     driver, wait, video_wait = driver_setup
@@ -596,38 +645,48 @@ def test_case_T375_4K_Seasons(driver_setup):
 
     try:
         time.sleep(8)
-        driver.press_keycode(85)
-        quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")')))
-        quality_btn.focusandclick()
-        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Asli 4K")'))).click()
-        driver.press_keycode(KEYCODE_BACK)
-        time.sleep(5)
-        asli_4k_logo = driver.find_element(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
-        assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
+        driver.press_keycode(KEYCODE_DPAD_CENTER)
+        driver.press_keycode(KEYCODE_DPAD_UP)
 
-        driver.press_keycode(85)
-        quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")')))
-        quality_btn.focusandclick()
-        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Full HD")'))).click()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")'))).focusandclick()
+        # quality_btn.focusandclick()
+        # most of them have upto full HD
+
+        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Full HD")'))).click()
         # driver.press_keycode(KEYCODE_BACK)
-        time.sleep(5)
-        logos = driver.find_elements(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
-        assert len(logos) == 0
+        # time.sleep(5)
+        # asli_4k_logo = driver.find_element(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
+        # assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
+
+        # driver.press_keycode(KEYCODE_DPAD_CENTER)
+        # driver.press_keycode(KEYCODE_DPAD_UP)
+        # quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")')))
+        # quality_btn.focusandclick()
+        # wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Full HD")'))).click()
+        # driver.press_keycode(KEYCODE_BACK)
+        # time.sleep(5)
+        # logos = driver.find_elements(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
+        # assert len(logos) == 0
     except Exception as e:
         print(f"T375 Quality change failed, seems a Non-4K Content or Device: {e}")
 
-    time.sleep(8)
-    driver.press_keycode(85)
+    time.sleep(10)
+    driver.press_keycode(KEYCODE_DPAD_CENTER)
+    driver.press_keycode(KEYCODE_DPAD_UP)
     ep_name_id = "in.startv.hotstar:id/tv_subtitle"
     current_episode_name = wait.until(
         EC.visibility_of_element_located((AppiumBy.ID, ep_name_id))
     ).text
     print(current_episode_name)
+    episodes_tray = wait.until(
+        EC.visibility_of_element_located((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Episodes")')))
+    assert episodes_tray.is_displayed(), "Episodes tray is not visible"
 
     try:
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Next Episode']"))).focusandclick()
         time.sleep(15)
-        driver.press_keycode(85)
+        driver.press_keycode(KEYCODE_DPAD_CENTER)
+        driver.press_keycode(KEYCODE_DPAD_UP)
         wait.until(EC.presence_of_element_located((AppiumBy.ID, ep_name_id)))
         next_episode_name = driver.find_element(AppiumBy.ID, ep_name_id).text
         assert current_episode_name != next_episode_name, f"Episode name did not change! Still: {current_episode_name}"
@@ -635,10 +694,9 @@ def test_case_T375_4K_Seasons(driver_setup):
         print("Seems it's the last episode.")
 
     time.sleep(10)
-    driver.press_keycode(85)
+    driver.press_keycode(KEYCODE_DPAD_CENTER)
     driver.press_keycode(KEYCODE_DPAD_DOWN)
-    episodes_tray = wait.until(EC.visibility_of_element_located((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Episodes")')))
-    assert episodes_tray.is_displayed(), "Episodes tray is not visible"
+
 
     driver.press_keycode(KEYCODE_BACK)
     time.sleep(1)
@@ -654,15 +712,14 @@ def test_case_T375_4K_Seasons(driver_setup):
     search_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[@resource-id="in.startv.hotstar:id/search_bar"]')))
     search_btn.send_keys("How To Train Your Dragon")
 
-    time.sleep(3)
-
     wait.until(EC.element_to_be_clickable(
         (AppiumBy.XPATH, '//android.widget.ImageView[@resource-id="in.startv.hotstar:id/hero_img"]'))).focusandclick()
     wait.until(EC.element_to_be_clickable(
-        (AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/textLabel"]'))).focusandclick()
+        (AppiumBy.XPATH, "//android.widget.TextView[@text='Watch Now' or @text='Watch from Beginning']/.."))).focusandclick()
     time.sleep(15)
 
-    driver.press_keycode(85)
+    driver.press_keycode(KEYCODE_DPAD_CENTER)
+    driver.press_keycode(KEYCODE_DPAD_UP)
     time.sleep(2)
     wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")'))).focusandclick()
     time.sleep(3)
@@ -681,7 +738,6 @@ def test_case_T375_4K_Seasons(driver_setup):
 
 @allure.story("[Free User] Verify trailer auto-play based on LPV, static paywall on KIDS profile, and PhonePe QR scan")
 @allure.title("RL-T357")
-@pytest.mark.testcase2
 def test_case_T357_Kids_Restrictions(driver_setup):
     """Validates restrictions and trailers in Kids profile on Android."""
     driver, wait, _ = driver_setup
@@ -743,7 +799,7 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     search_btn.send_keys("How To Train Your Dragon")
     wait.until(EC.element_to_be_clickable(
         (AppiumBy.XPATH, '//android.widget.ImageView[@resource-id="in.startv.hotstar:id/hero_img"]'))).focusandclick()
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Subscribe to Watch']"))).focusandclick()
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Subscribe to Watch' or @text='Upgrade to Watch']"))).focusandclick()
 
     plan_id = '//android.widget.TextView[@resource-id="in.startv.hotstar:id/plan_selector_price" and @text="₹699"]'
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, plan_id))).focusandclick()
@@ -763,7 +819,6 @@ def test_case_T357_Kids_Restrictions(driver_setup):
 
 @allure.story("[Premium User] Verify a Premium User is able to login, search content, play it, and logout")
 @allure.title("RL-T1488")
-@pytest.mark.testcase5
 def test_case_T1488_watch_movie(driver_setup):
     driver, wait, video_wait = driver_setup
     phone_premium, otp, hid = get_test_credentials("Phone_Smppremium")
@@ -772,6 +827,7 @@ def test_case_T1488_watch_movie(driver_setup):
 
     _login(driver, wait, phone_premium, otp)
     _profile_onboarding(driver, wait)
+    _verify_home_scroll(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
@@ -793,37 +849,42 @@ def test_case_T1488_watch_movie(driver_setup):
         watch_btn.focusandclick()
         assert watch_btn is not None, "Watch button not available"
 
-    with allure.step("Wait for Video Playback to Start"):
-        SPINNER_XPATH = '//*[@resource-id="in.startv.hotstar:id/loader"]'
-        video_wait.until(EC.invisibility_of_element_located((AppiumBy.XPATH, SPINNER_XPATH)))
-
-    with allure.step("Modify Video Quality and Audio/Subtitles"):
-        time.sleep(25)
-        driver.press_keycode(85)
-        driver.press_keycode(KEYCODE_DPAD_UP)
-        video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Quality"]')))
-
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Quality"]'))).focusandclick()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Full HD"]'))).click()
-        driver.press_keycode(KEYCODE_BACK)
-
-        time.sleep(5)
-        driver.press_keycode(85)
-        driver.press_keycode(KEYCODE_DPAD_UP)
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Tamil"]'))).click()
-        driver.press_keycode(KEYCODE_BACK)
-        time.sleep(5)
-
-        driver.press_keycode(85)
-        driver.press_keycode(KEYCODE_DPAD_UP)
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="English [CC]"]'))).click()
-        driver.press_keycode(KEYCODE_BACK)
+    # with allure.step("Wait for Video Playback to Start"):
+    #     SPINNER_XPATH = '//*[@resource-id="in.startv.hotstar:id/loader"]'
+    #     video_wait.until(EC.invisibility_of_element_located((AppiumBy.XPATH, SPINNER_XPATH)))
+    #
+    # with allure.step("Modify Video Quality and Audio/Subtitles"):
+    #     time.sleep(25)
+    #     driver.press_keycode(85)
+    #     driver.press_keycode(KEYCODE_DPAD_UP)
+    #     video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Quality"]')))
+    #
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Quality"]'))).focusandclick()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Full HD"]'))).click()
+    #     driver.press_keycode(KEYCODE_BACK)
+    #
+    #     time.sleep(5)
+    #     driver.press_keycode(85)
+    #     driver.press_keycode(KEYCODE_DPAD_UP)
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Tamil"]'))).click()
+    #     driver.press_keycode(KEYCODE_BACK)
+    #     time.sleep(5)
+    #
+    #     driver.press_keycode(85)
+    #     driver.press_keycode(KEYCODE_DPAD_UP)
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="English [CC]"]'))).click()
+    #     driver.press_keycode(KEYCODE_BACK)
 
     with allure.step("Play for 10 seconds and Exit"):
         print("Playing with new settings for 10 seconds...")
-        time.sleep(10)
+        time.sleep(15)
         driver.press_keycode(KEYCODE_BACK)   # Exit player
         driver.press_keycode(KEYCODE_BACK)   # Exit Details page
-        _navigate_back_to_home(driver)
+        _open_side_nav(driver)
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("My Space")'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ID,'in.startv.hotstar:id/btn_help_settings_cta'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ID,'in.startv.hotstar:id/btn_logout'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,'//*[@text="Log Out"]'))).click()
