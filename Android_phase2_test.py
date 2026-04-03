@@ -16,8 +16,8 @@ import json
 
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
-DEVICE_NAME = "172.23.12.37"           # Update with your device name (adb devices)
-PLATFORM_VERSION = "10"                  # Update with your Android version
+DEVICE_NAME = "172.23.12.37"                    # Update with your device name (adb devices)
+PLATFORM_VERSION = "8"                     # Update with your Android version
 APP_PACKAGE = "in.startv.hotstar"        # Hotstar Android package name
 APP_ACTIVITY = "com.hotstar.MainActivity"  # Update if different
 
@@ -120,7 +120,7 @@ def driver_setup(request):
     appium_options.set_capability("appium:platformVersion", PLATFORM_VERSION)
     appium_options.set_capability("appium:appPackage", APP_PACKAGE)
     appium_options.set_capability("appium:appActivity", APP_ACTIVITY)
-    appium_options.set_capability("appium:noReset", False)
+    appium_options.set_capability("appium:noReset", True)
     appium_options.set_capability("appium:forceAppLaunch", True)
     appium_options.set_capability("appium:autoGrantPermissions", True)
     appium_options.set_capability("appium:newCommandTimeout", 300)
@@ -401,6 +401,49 @@ def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
             time.sleep(1)
     raise TimeoutException("Failed to navigate back to the Home Screen after maximum attempts.")
 
+def _background_and_resume_validate_subtitle(driver):
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support import expected_conditions as EC
+
+
+    wait = WebDriverWait(driver, 20)
+
+    # 🔹 1. Capture subtitle state BEFORE going home
+    subtitle_btn = wait.until(
+        EC.presence_of_element_located((By.ID, "subtitle_toggle"))  # 🔁 replace with actual locator
+    )
+    subtitle_state_before = subtitle_btn.get_attribute("checked")
+
+    print(f"Subtitle before HOME: {subtitle_state_before}")
+
+    # 🔹 2. Press HOME (background app)
+    driver.press_keycode(3)
+
+    wait.until(lambda d: d.current_package != APP_PACKAGE)
+
+    # 🔹 3. Bring app back (DO NOT restart activity)
+    driver.activate_app(APP_PACKAGE)
+
+    wait.until(lambda d: d.current_package == APP_PACKAGE)
+
+    # 🔹 4. Validate playback resumed
+    wait.until(
+        lambda d: "Pause" in d.page_source  # 🔁 adjust based on your player UI
+    )
+
+    # 🔹 5. Capture subtitle state AFTER relaunch
+    subtitle_btn_after = wait.until(
+        EC.presence_of_element_located((By.ID, "subtitle_toggle"))  # 🔁 same locator
+    )
+    subtitle_state_after = subtitle_btn_after.get_attribute("checked")
+
+    print(f"Subtitle after resume: {subtitle_state_after}")
+
+    # 🔹 6. Assertion
+    assert subtitle_state_before == subtitle_state_after, \
+        f"Subtitle state mismatch! Before: {subtitle_state_before}, After: {subtitle_state_after}"
+
 
 @allure.step("Perform Logout")
 def _logout(driver, wait, navigate_back_func):
@@ -483,7 +526,6 @@ def _create_profile(driver, wait):
 @allure.story("[Fresh User] Verify a Fresh User is able to Login and browse the app, verify Click on Subscribe CTA in Home Page & myspace")
 @allure.title("RL-T1487")
 def test_case_RLT1487(driver_setup):
-    # assert False
     driver, wait, _ = driver_setup
     fresh_phone, fresh_otp, fresh_hid = get_test_credentials("Phone_Fresh_User")
 
@@ -682,6 +724,8 @@ def test_case_T375_4K_Seasons(driver_setup):
         EC.visibility_of_element_located((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Episodes")')))
     assert episodes_tray.is_displayed(), "Episodes tray is not visible"
 
+    _background_and_resume_validate_subtitle(driver)
+
     try:
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Next Episode']"))).focusandclick()
         time.sleep(15)
@@ -849,33 +893,33 @@ def test_case_T1488_watch_movie(driver_setup):
         watch_btn.focusandclick()
         assert watch_btn is not None, "Watch button not available"
 
-    # with allure.step("Wait for Video Playback to Start"):
-    #     SPINNER_XPATH = '//*[@resource-id="in.startv.hotstar:id/loader"]'
-    #     video_wait.until(EC.invisibility_of_element_located((AppiumBy.XPATH, SPINNER_XPATH)))
-    #
-    # with allure.step("Modify Video Quality and Audio/Subtitles"):
-    #     time.sleep(25)
-    #     driver.press_keycode(85)
-    #     driver.press_keycode(KEYCODE_DPAD_UP)
-    #     video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Quality"]')))
-    #
-    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Quality"]'))).focusandclick()
-    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Full HD"]'))).click()
-    #     driver.press_keycode(KEYCODE_BACK)
-    #
-    #     time.sleep(5)
-    #     driver.press_keycode(85)
-    #     driver.press_keycode(KEYCODE_DPAD_UP)
-    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
-    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Tamil"]'))).click()
-    #     driver.press_keycode(KEYCODE_BACK)
-    #     time.sleep(5)
-    #
-    #     driver.press_keycode(85)
-    #     driver.press_keycode(KEYCODE_DPAD_UP)
-    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
-    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="English [CC]"]'))).click()
-    #     driver.press_keycode(KEYCODE_BACK)
+    with allure.step("Wait for Video Playback to Start"):
+        SPINNER_XPATH = '//*[@resource-id="in.startv.hotstar:id/loader"]'
+        video_wait.until(EC.invisibility_of_element_located((AppiumBy.XPATH, SPINNER_XPATH)))
+
+    with allure.step("Modify Video Quality and Audio/Subtitles"):
+        time.sleep(25)
+        driver.press_keycode(85)
+        driver.press_keycode(KEYCODE_DPAD_UP)
+        video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Quality"]')))
+
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Quality"]'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Full HD"]'))).click()
+        driver.press_keycode(KEYCODE_BACK)
+
+        time.sleep(5)
+        driver.press_keycode(85)
+        driver.press_keycode(KEYCODE_DPAD_UP)
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Tamil"]'))).click()
+        driver.press_keycode(KEYCODE_BACK)
+        time.sleep(5)
+
+        driver.press_keycode(85)
+        driver.press_keycode(KEYCODE_DPAD_UP)
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="English [CC]"]'))).click()
+        driver.press_keycode(KEYCODE_BACK)
 
     with allure.step("Play for 10 seconds and Exit"):
         print("Playing with new settings for 10 seconds...")
