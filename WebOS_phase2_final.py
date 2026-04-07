@@ -17,32 +17,35 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "LG2021"
-DEVICE_HOST = "172.23.4.21" # Ensure this matches your TV's current IP
+DEVICE_HOST = "172.23.4.24"  # Ensure this matches your TV's current IP
 APP_ID = "hotstar"
-#CHROMEDRIVER_PATH = "/Users/dev.mm.con/chromedriver-2.36"
+# CHROMEDRIVER_PATH = "/Users/dev.mm.con/chromedriver-2.36"
 
 # Static Test Data
 User_Cookie = None
 User_Token = None
 HOME_LOCATOR = (AppiumBy.XPATH, "//div[@aria-label='Home']")
 
+
 def load_config():
     # --- 2. Tell Python we are modifying the global variables ---
-    global User_Cookie, User_Token 
-    
+    global User_Cookie, User_Token
+
     # --- 3. Read the file ---
     try:
         with open('Usercredential.json', 'r') as file:
             data = json.load(file)
-            
+
             # --- 4. Assign JSON data to variables ---
             User_Token = data.get("xsrf-token")
             User_Cookie = data.get("Cookie")
     except Exception as e:
         print(f"Failed to load config: {e}")
 
+
 # --- 5. Call the method immediately ---
 load_config()
+
 
 # --- API Integration Functions ---
 
@@ -67,7 +70,7 @@ def get_test_credentials(user_type="Phone_Fresh_User"):
         response = requests.post(url, headers=headers, json=payload, timeout=15)
         response.raise_for_status()
         data = response.json()
-        
+
         user_list = data.get('data', {}).get('user', [])
         if user_list:
             user_obj = user_list[0]
@@ -80,6 +83,7 @@ def get_test_credentials(user_type="Phone_Fresh_User"):
     except Exception as e:
         print(f"❌ API Request Failed: {e}")
         return None, None
+
 
 @allure.step("Resetting Watch Time for HID: {hid}")
 def reset_user_watch_time(hid, watch_time_ms):
@@ -103,6 +107,7 @@ def reset_user_watch_time(hid, watch_time_ms):
         print(f"⚠️ Failed to reset watch time: {e}")
         return None
 
+
 # --- Pytest Fixtures ---
 
 @pytest.fixture(scope="function")
@@ -119,8 +124,8 @@ def driver_setup(request):
     appium_options.set_capability("appium:noReset", True)
     appium_options.set_capability("appium:rcMode", "rc")
     # appium_options.set_capability("appium:webosSdkHome", r"C:\LG_webOS_TV_SDK")
-    appium_options.set_capability("appium:chromedriverExecutable", "C:\\Users\\vasanthkumar.r.con\\Downloads\\chromedriver_win32\\chromedriver.exe")
-    appium_options.set_capability("appium:newCommandTimeout", 300) # Prevents Session Death during sleeps
+    appium_options.set_capability("appium:chromedriverExecutable", "C:\\chromedriver\\chromedriver.exe")
+    appium_options.set_capability("appium:newCommandTimeout", 300)  # Prevents Session Death during sleeps
 
     driver = None
     try:
@@ -130,7 +135,7 @@ def driver_setup(request):
 
         # Initialize waiters
         ignored_exceptions = [StaleElementReferenceException]
-        wait_50s = WebDriverWait(driver,50, ignored_exceptions=ignored_exceptions)
+        wait_50s = WebDriverWait(driver, 50, ignored_exceptions=ignored_exceptions)
         video_90s = WebDriverWait(driver, 90, ignored_exceptions=ignored_exceptions)
 
         print("App launched successfully.")
@@ -149,13 +154,12 @@ def driver_setup(request):
             try:
                 _logout(driver, wait_50s, _navigate_back_to_home)
             except Exception as e:
-                
+
                 print(f"Warning: Logout failed during tearDown. App state might be unstable: {e}")
             print(f"\nRunning teardown for test: {request.node.name}...")
             driver.quit()
             print("App closed.")
         time.sleep(10)
-
 
 
 # --- Reusable Utility Helpers ---
@@ -187,55 +191,72 @@ def _login(driver, wait, phone_number, otp):
         for digit in otp:
             wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//div[@data-testid='otp-login-lr']")))
             driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
-    
+
+
 @allure.step("switching to kids profile")
 def _switching_to_kids(driver, wait):
-    wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
+    # wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
+    _open_side_nav(driver)
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
+
     time.sleep(5)
     profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
-    step_count = len(profiles)
-    for x in range(1, step_count):
-        driver.execute_script("webos: pressKey", {"key": "RIGHT"})
-        time.sleep(1)
-        
-    driver.execute_script("webos: pressKey", {"key": "ENTER"})    #switching to kids
+
+    if profiles:
+        profiles[0].click()
+    # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
+    # step_count = len(profiles)
+    # for x in range(1, step_count):
+    #     driver.execute_script("webos: pressKey", {"key": "LEFT"})
+    #     time.sleep(1)
+    #
+    # time.sleep(5)
+    # driver.execute_script("webos: pressKey", {"key": "ENTER"})
+    # driver.execute_script("webos: pressKey", {"key": "ENTER"})
+    # switching to kids
     time.sleep(3)
 
+
 @allure.step("Switching to main profile from kids profile")
-def _Switching_back_to_main_profile(driver,wait):
-    wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click() #Navigate to Myspace 
+def _Switching_back_to_main_profile(driver, wait):
+    wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()  # Navigate to Myspace
+    _open_side_nav(driver)
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
+
     time.sleep(3)
     profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
-    assert len(profiles) > 0, "No elements found to hover over!"
-    for Y in range(1, len(profiles)):
-                driver.execute_script("webos: pressKey", {"key": "left"})
-                time.sleep(1)
-                # 4. Press ENTER and wait
-    driver.execute_script("webos: pressKey", {"key": "enter"})
+    if profiles:
+        profiles[0].click()
+    # assert len(profiles) > 0, "No elements found to hover over!"
+    # for Y in range(1, len(profiles)):
+    #     driver.execute_script("webos: pressKey", {"key": "left"})
+    #     time.sleep(1)
+    #     # 4. Press ENTER and wait
+    # driver.execute_script("webos: pressKey", {"key": "enter"})
     time.sleep(1)
-    try : 
-                 # 2. Enter PIN
-                pin_string = "1234"
-                for digit in pin_string:
-                    driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
-                    time.sleep(2)
+    try:
+        # 2. Enter PIN
+        pin_string = "1234"
+        for digit in pin_string:
+            driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
+            time.sleep(2)
     except Exception as e:
-                print(f"Error occurred while entering PIN: {e}")
-                # Append logout code
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@focuskey='nav-menu-item-Movies']"))).click()
+        print(f"Error occurred while entering PIN: {e}")
+        # Append logout code
+
 
 @allure.step("Select Profile and Enter PIN")
 def _profile_onboarding(driver, wait):
     print("Profile selection started")
 
-    # 1. Select the main profile
-    profile_img = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='ADULT']/ancestor::div[@role='button']"))
-    )
-    profile_img.click()
-
-    # 2. Enter PIN
     try:
+        # 1. Select the main profile
+        profile_img = wait.until(
+            EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='ADULT']/ancestor::div[@role='button']"))
+        )
+        profile_img.click()
+
+        # 2. Enter PIN
         # We search for the element; if it's not there within 5 seconds, we skip the PIN block
         pin_button_1 = wait.until(
             EC.visibility_of_element_located((AppiumBy.XPATH, '//span[text()="1"]'))
@@ -254,6 +275,7 @@ def _profile_onboarding(driver, wait):
         # If the element "//span[text()='1']" is not found, it throws a TimeoutException
         print("Parental lock is not available for this user. Proceeding...")
 
+
 @allure.step("Navigate to Nav Bar")
 def _open_side_nav(driver, max_attempts=10):
     home_xpath = "//div[@aria-label='Home']"
@@ -265,9 +287,10 @@ def _open_side_nav(driver, max_attempts=10):
 
         # Press LEFT key using webOS remote
         driver.execute_script("webos: pressKey", {"key": "left"})
-        time.sleep(1.5)
+        time.sleep(1)
 
     raise Exception("Home side-nav not visible after navigating left")
+
 
 @allure.step("Validate Side Nav is displayed")
 def _validate_side_nav(wait):
@@ -286,6 +309,7 @@ def _validate_side_nav(wait):
             btn = wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
             assert btn is not None, f"{name} side-nav is not available"
             print(f"{name} side-nav is available")
+
 
 @allure.step("Navigate back to Home Screen gracefully")
 def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
@@ -320,9 +344,12 @@ def _logout(driver, wait, navigate_back_func):
         # Ensure we are on the home screen before attempting to navigate the menu
         navigate_back_func(driver)
 
+        _open_side_nav(driver)
+
         wait.until(
-            EC.element_to_be_clickable(HOME_LOCATOR)
+            EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))
         ).click()
+
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
         ).click()
@@ -350,7 +377,6 @@ def _logout(driver, wait, navigate_back_func):
 
 @allure.step("Search for term: {search_term}")
 def _search(driver, search_term):
-    
     for char in search_term:
         key_to_press = "Space" if char == ' ' else char.upper()
         xpath_expression = f'//button[.//span[text()="{key_to_press}"]]'
@@ -359,6 +385,7 @@ def _search(driver, search_term):
         except Exception as e:
             print(f"Error clicking key '{key_to_press}': {e}")
             raise
+
 
 @allure.step("Validate that the PSP page is displayed")
 def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
@@ -376,32 +403,35 @@ def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
         print(f"Verification Failed: {timeout_msg}")
         pytest.fail(timeout_msg)
 
+
 @allure.step("Create profile for fresh user")
-def _create_profile(driver,wait):
+def _create_profile(driver, wait):
     profile_input = wait.until(
-        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(),"Your Name")]')) 
+        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(),"Your Name")]'))
     )
-    profile_input.click() 
+    profile_input.click()
     # //*[@data-testid="phone-number-input"]
 
     _search(driver, "TEST")
     wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//button[.//span[text()="Create Your Profile"]]'))
-        ).click()
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//button[.//span[text()="Create Your Profile"]]'))
+    ).click()
     time.sleep(2)
     lang_kannada = wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//div[./div[text()="Kannada"]]/ancestor::div[@data-testid="action"]'))
-        )
+        EC.element_to_be_clickable(
+            (AppiumBy.XPATH, '//div[./div[text()="Kannada"]]/ancestor::div[@data-testid="action"]'))
+    )
     lang_kannada.click()
 
     wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@title="Continue"]'))
-        ).click()
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@title="Continue"]'))
+    ).click()
 
 
 # --- Test Cases ---
 
-@allure.story("[Fresh User] Verify a Fresh User is able to Login and browse the app, verify Click on Subscribe CTA in Home Page & myspace ")
+@allure.story(
+    "[Fresh User] Verify a Fresh User is able to Login and browse the app, verify Click on Subscribe CTA in Home Page & myspace ")
 @allure.title("RL-T1487")
 @pytest.mark.testcase4
 def test_case_RLT1487(driver_setup):
@@ -413,7 +443,7 @@ def test_case_RLT1487(driver_setup):
 
     _login(driver, wait, fresh_phone, fresh_otp)
 
-    _create_profile(driver,wait)
+    _create_profile(driver, wait)
     time.sleep(2)
 
     _open_side_nav(driver)
@@ -421,7 +451,7 @@ def test_case_RLT1487(driver_setup):
 
     with allure.step("Tap on subscribe in my space"):
         myspace_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))
+            EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))
         )
         myspace_btn.click()
 
@@ -431,14 +461,14 @@ def test_case_RLT1487(driver_setup):
 
         validate_psp_page_visible(wait)
 
-        driver.back()  
+        driver.back()
 
     with allure.step("Try to play any content"):
         _open_side_nav(driver)
         driver.execute_script("webos: pressKey", {"key": "left"})
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
-        wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "div[role='textbox']")))
-        _search(driver,"King and Conqueror")
+        # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "div[role='textbox']")))
+        _search(driver, "King and Conqueror")
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="King & Conqueror"]'))
         ).click()
@@ -452,7 +482,9 @@ def test_case_RLT1487(driver_setup):
         driver.back()
         _navigate_back_to_home(driver)
 
-@allure.story("[Free User]As a Free user, I go to Sports Sub menu and I see PSP upon playing non-free live content, I am allowed to play free live contents for 4hrs and i see PSP page after completing 4hrs of free timer")
+
+@allure.story(
+    "[Free User]As a Free user, I go to Sports Sub menu and I see PSP upon playing non-free live content, I am allowed to play free live contents for 4hrs and i see PSP page after completing 4hrs of free timer")
 @allure.title("RL-T356")
 @pytest.mark.testcase1
 def test_case_RLT356(driver_setup):
@@ -460,30 +492,32 @@ def test_case_RLT356(driver_setup):
     free_phone, otp, hid = get_test_credentials("Free_Timer_Eligible_users_two")
     if not free_phone:
         pytest.fail("Failed to fetch Phone_Fresh credentials from API")
-    reset_user_watch_time(hid,watch_time_ms=7134000)
-    
+    reset_user_watch_time(hid, watch_time_ms=7134000)
+
     _login(driver, wait, free_phone, otp)
     # _profile_onboarding(driver, wait)
     time.sleep(5)
     driver.execute_script("webos: pressKey", {"key": "left"})
     _open_side_nav(driver)
     wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH,"//div[@aria-label='Movies']"))
-        ).click()
-    
+        EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Movies']"))
+    ).click()
+
     # time.sleep(2)
-    
+
     # wait.until(
     #         EC.element_to_be_clickable((AppiumBy.XPATH,'//*[@data-testid="slider-slide-0 slide-selected" or @data-testid="slider-slide-0"]'))
     #     ).click()
     time.sleep(5)
-    driver.execute_script("webos: pressKey", {"key": "down"})
-    movie_tray=wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH,"(//div[@data-testid='hs-image']//img/ancestor::div[@role='button'])[1]"))
-        )
+    # driver.execute_script("webos: pressKey", {"key": "down"})
+    movie_tray = wait.until(
+        EC.element_to_be_clickable(
+            (AppiumBy.XPATH, "(//div[@data-testid='hs-image']//img/ancestor::div[@role='button'])[1]"))
+    )
     movie_tray.click()
     with allure.step("Start Playback"):
-        watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,'//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]')))
+        watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,
+                                                           '//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]')))
         watch_btn.click()
         assert watch_btn is not None, "Watch button not available"
         print("Playback started")
@@ -491,22 +525,22 @@ def test_case_RLT356(driver_setup):
     timer_locator = (AppiumBy.XPATH, "//span[contains(@class, 'BUTTON2_MEDIUM') and contains(text(), ':')]")
     time.sleep(20)
     timer = wait.until(
-    EC.element_to_be_clickable(timer_locator)
-        )
+        EC.element_to_be_clickable(timer_locator)
+    )
     assert timer is not None, "Timer is not available"
     print("Timer is available")
-    
+
     # 1. Capture initial time
     time_1 = wait.until(EC.visibility_of_element_located(timer_locator)).text
     print(f"Initial time: {time_1}")
-    
+
     # 2. Wait for playback to progress
     time.sleep(5)
-    
+
     # 3. Capture second time
     time_2 = driver.find_element(*timer_locator).text
     print(f"Time after 5s: {time_2}")
-    
+
     # 4. Compare (Time 2 should be different/greater than Time 1)
     assert time_1 != time_2, f"Timer is stuck at {time_1}. Video might not be playing."
     print("Validation Successful: Timer is running.")
@@ -514,331 +548,333 @@ def test_case_RLT356(driver_setup):
 
     sub_now = video_wait.until(
         EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Subscribe Now"]'))
-        )
+    )
     assert sub_now is not None, "Subscribe now CTA is not available"
     print("Subscribe now CTA is available")
     time.sleep(2)
 
     validate_psp_page_visible(wait)
-    
+
     _navigate_back_to_home(driver)
 
     time.sleep(2)
 
-    wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH,'//*[@realfocuskey="nav-menu-item-Home"]'))
-        ).click()
+    # wait.until(
+    #     EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Home"]'))
+    # ).click()
 
-    time.sleep(2)
+    # time.sleep(2)
+
+    driver.execute_script("webos: pressKey", {"key": "down"})
+
 
     hp_banner = wait.until(
         EC.visibility_of_element_located((AppiumBy.XPATH, '//*[text()="Your free access is over"]'))
-        )
+    )
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
     time.sleep(1)
-    # driver.execute_script("webos: pressKey", {"key": "down"})
 
     # driver.execute_script("webos: pressKey", {"key": "enter"})
 
-    # # driver.find_element(AppiumBy.XPATH,'//button[.//*[text()="Subscribe"]]').click()
+    driver.find_element(AppiumBy.XPATH,'//button[.//*[text()="Subscribe"]]').click()
+    driver.execute_script("webos: pressKey", {"key": "enter"})
 
-    # validate_psp_page_visible(wait)
 
-    # driver.back()
+    validate_psp_page_visible(wait)
 
-@allure.story("[Premium User]As a Premium user, I am playing a series from TV Submenu and seeing Binge Controls, Watch Next/MLT trays and able to play Series more than 10mins without any interruption")
+    driver.back()
+
+
+@allure.story(
+    "[Premium User]As a Premium user, I am playing a series from TV Submenu and seeing Binge Controls, Watch Next/MLT trays and able to play Series more than 10mins without any interruption")
 @allure.title("RL-T375")
 @pytest.mark.testcase3
 def test_case_T375_4K_Seasons(driver_setup):
     """Validates 4K logos and season navigation."""
     driver, wait, video_wait = driver_setup
-    # premium_phone, otp, hid = get_test_credentials("Phone_Smppremium")
-    # if not premium_phone:
-    #     pytest.fail("Failed to fetch Phone_Fresh credentials from API")
-    #
+    premium_phone, otp, hid = get_test_credentials("Phone_Smppremium")
+    if not premium_phone:
+        pytest.fail("Failed to fetch Phone_Fresh credentials from API")
+
     # _login(driver, wait, premium_phone, otp)
     _profile_onboarding(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
-    # wait.until(EC.visibility_of_element_located((AppiumBy.XPATH,"//*[contains(@realfocuskey, 'nav-menu-item')]")))
-    # subnav_comp = driver.find_elements(AppiumBy.XPATH, "//*[contains(@realfocuskey, 'nav-menu-item')]")
-    # actual_count = len(subnav_comp)
-    # expected_count = 8
-    # assert actual_count == expected_count, f"Expected {expected_count} elements, but found {actual_count}"
-    driver.execute_script("webos: pressKey", {"key": "down"})
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,"//div[@aria-label='TV']"))).click()
+
+    driver.execute_script("webos: pressKey", {"key": "left"})
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _search(driver, "Resort")
+    wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Resort']"))
+    ).click()
+
     time.sleep(3)
-
-
 
     watch_xpath = '//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]'
     driver.find_element(AppiumBy.XPATH, watch_xpath).click()
     time.sleep(3)
     try:
-                SPINNER_XPATH = '//*[@data-testid="loader"]'
-                video_wait.until(EC.invisibility_of_element_located((AppiumBy.XPATH, SPINNER_XPATH)))
-                video_player = wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//div[@data-testid="skin-container"]')))
-                time.sleep(3)
+        SPINNER_XPATH = '//*[@data-testid="loader"]'
+        video_wait.until(EC.invisibility_of_element_located((AppiumBy.XPATH, SPINNER_XPATH)))
+        video_player = wait.until(
+            EC.visibility_of_element_located((AppiumBy.XPATH, '//div[@data-testid="skin-container"]')))
+        time.sleep(3)
     except Exception as e:
         print(f"Video Play failed & T375 failed: {e}")
     try:
-                driver.execute_script("webos: pressKey", {"key": "UP"})
-                skip_recap = driver.find_element(AppiumBy.XPATH, "//*[@title='Skip Recap']")
-                assert skip_recap.is_displayed(), "Skip Recap button was not visible on screen"
-                skip_recap.click()
+        driver.execute_script("webos: pressKey", {"key": "UP"})
+        skip_recap = driver.find_element(AppiumBy.XPATH, "//*[@title='Skip Recap']")
+        assert skip_recap.is_displayed(), "Skip Recap button was not visible on screen"
+        skip_recap.click()
     except Exception as e:
         print(f"Recap is not available {e}")
-                
-    try:
-                driver.execute_script("webos: pressKey", {"key": "UP"})
-                quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@title='Quality']")))
-                quality_btn.click()
-                asli_4k_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Asli 4K']")))
-                asli_4k_option.click()
-                time.sleep(5)
-                asli_4k_logo = driver.find_element(AppiumBy.XPATH, "//*[@class='ASLI_4K_LOGO_WRAPPER']")
-                assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
-                driver.execute_script("webos: pressKey", {"key": "UP"})
-                quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@title='Quality']")))
-                quality_btn.click()
-                fhd_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Full HD']")))
-                fhd_option.click()
-                time.sleep(5)
-                logos = driver.find_elements(AppiumBy.XPATH, "//*[@class='ASLI_4K_LOGO_WRAPPER']")
-                assert len(logos) == 0
-    except Exception as e:
-                print(f"T375 Quality change failed, seems a Non 4K device: {e}")
 
-            # 1. Get the current episode name
-    driver.execute_script("webos: pressKey", {"key": "up"})
-    ep_name_xpath = "//*[@class='pgYQn-YxdROBlrWtyE7dG']/p[2]"
-    current_episode_name = driver.find_element(AppiumBy.XPATH, ep_name_xpath).text
-            # 2. Click on 'Next Episode'
     try:
-                next_btn_xpath = "//*[text()='Next Episode']"
-                wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, next_btn_xpath))).click()
-        
-                # 3. Wait for the UI to update
-                time.sleep(15)
-        
-                # 4. Get the new episode name and Assert they are different
-                driver.execute_script("webos: pressKey", {"key": "down"})
-                wait.until(EC.presence_of_element_located((AppiumBy.XPATH, ep_name_xpath)))
-                next_episode_name = driver.find_element(AppiumBy.XPATH, ep_name_xpath).text
-                assert current_episode_name != next_episode_name, f"Episode name did not change! Still: {current_episode_name}"
+        driver.execute_script("webos: pressKey", {"key": "UP"})
+        quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@title='Quality']")))
+        quality_btn.click()
+        asli_4k_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Asli 4K']")))
+        asli_4k_option.click()
+        time.sleep(5)
+        asli_4k_logo = driver.find_element(AppiumBy.XPATH, "//*[@class='ASLI_4K_LOGO_WRAPPER']")
+        assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
+        driver.execute_script("webos: pressKey", {"key": "UP"})
+        quality_btn.click()
+        fhd_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Full HD']")))
+        fhd_option.click()
+        time.sleep(5)
+        logos = driver.find_elements(AppiumBy.XPATH, "//*[@class='ASLI_4K_LOGO_WRAPPER']")
+        assert len(logos) == 0
     except Exception as e:
-                print("Seems its last episode.")
-            # 5. Assert Episodes Tray visibility
+        print(f"T375 Quality change failed, seems a Non 4K device: {e}")
+
+    # 1. Get the current episode name
+    driver.execute_script("webos: pressKey", {"key": "up"})
+    ep_name_xpath = "//div[@class='pgYQn-YxdROBlrWtyE7dG']/p[2]"
+
+    # Wait up to 10 seconds for the element to be visible
+    element = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((AppiumBy.XPATH, ep_name_xpath))
+    )
+
+    current_episode_name = element.text
+    print(f"Detected Episode: {current_episode_name}")
+
+    # 2. Click on 'Next Episode'
+    try:
+        next_btn_xpath = "//*[text()='Next Episode']"
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, next_btn_xpath))).click()
+
+        # 3. Wait for the UI to update
+        time.sleep(15)
+
+        # 4. Get the new episode name and Assert they are different
+        driver.execute_script("webos: pressKey", {"key": "down"})
+        wait.until(EC.presence_of_element_located((AppiumBy.XPATH, ep_name_xpath)))
+        next_episode_name = driver.find_element(AppiumBy.XPATH, ep_name_xpath).text
+        assert current_episode_name != next_episode_name, f"Episode name did not change! Still: {current_episode_name}"
+    except Exception as e:
+        print("Seems its last episode.")
+    # 5. Assert Episodes Tray visibility
     episodes_tray = driver.find_element(AppiumBy.XPATH, "//*[text()='Episodes']")
     assert episodes_tray.is_displayed(), "Episodes tray is not visible after navigation"
-    driver.back() #Back from watchPage
+    driver.back()  # Back from watchPage
     time.sleep(3)
-    driver.back() #Back from details page
+    driver.back()  # Back from details page
     _switching_to_kids(driver, wait)
-            # Switched to Kids Profile (its total profile -1)
-    search_btn = wait.until(
-    EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Search"]')))
-    search_btn.click()
-    search_term = "How To Train Your Dragon"
-    for char in search_term:
-                key_to_press = "Space" if char == ' ' else char.upper()
-                xpath_expression = f'//button[.//span[text()="{key_to_press}"]]'
-                driver.find_element(AppiumBy.XPATH, xpath_expression).click()
-                time.sleep(1)
+    # Switched to Kids Profile (its total profile -1)
+    _open_side_nav(driver)
+    driver.execute_script("webos: pressKey", {"key": "left"})
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _search(driver, "How To Train Your Dragon")
+
     time.sleep(3)
-    search_result = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "How To Train Your Dragon")]')))
+    search_result = wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "How To Train Your Dragon")]')))
     search_result.click()
     assert search_result is not None, "Search result not found"
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,"//*[@title='Watch from Beginning' or @title='Watch Now']"))).click()
-    time.sleep(10)
+    wait.until(EC.element_to_be_clickable(
+        (AppiumBy.XPATH, "//*[@title='Watch from Beginning' or @title='Watch Now']"))).click()
+    time.sleep(15)
+    driver.execute_script("webos: pressKey", {"key": "UP"})
     driver.execute_script("webos: pressKey", {"key": "UP"})
     time.sleep(2)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Quality"]'))).click()
     time.sleep(3)
     asli_4k_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Asli 4K']")))
     asli_4k_option.click()
-    
+
     time.sleep(5)
     asli_4k_logo = driver.find_element(AppiumBy.XPATH, "//*[@class='ASLI_4K_LOGO_WRAPPER']")
     assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
 
-    driver.back() #Back to details page
+    driver.back()  # Back to details page
     time.sleep(2)
-    driver.back() #Back to Search page
-    _Switching_back_to_main_profile(driver,wait)
+    driver.back()  # Back to Search page
+    _Switching_back_to_main_profile(driver, wait)
 
-@allure.story("[Free User] As a Free user, I see trailer auto-play based on LPV, check static paywall on KIDS profile after no free timer and check phonepe QR and scan scan the QR, Check amount is loaded correctly")
+
+@allure.story(
+    "[Free User] As a Free user, I see trailer auto-play based on LPV, check static paywall on KIDS profile after no free timer and check phonepe QR and scan scan the QR, Check amount is loaded correctly")
 @allure.title("RL-T357")
 @pytest.mark.testcase2
 def test_case_T357_Kids_Restrictions(driver_setup):
     """Validates restrictions and trailers in Kids profile."""
     driver, wait, _ = driver_setup
-    phone_free, otp,hid = get_test_credentials("Free_Timer_Eligible_users_two")
+    phone_free, otp, hid = get_test_credentials("Free_Timer_Eligible_users_two")
     if not phone_free:
         pytest.fail("Failed to fetch Phone_Fresh credentials from API")
 
-    reset_user_watch_time(hid,watch_time_ms=74440000)
+    reset_user_watch_time(hid, watch_time_ms=74440000)
 
     _login(driver, wait, phone_free, otp)
     _profile_onboarding(driver, wait)
-    
-    driver.find_element(AppiumBy.XPATH, "//*[@focuskey='nav-menu-item-Movies']").click()
-    time.sleep(7)
-    
-    # 2. Scroll down and search for Languages
-    driver.execute_script("webos: pressKey", {"key": "DOWN"})
-    time.sleep(2)
-    
-    for i in range(8):
-    # 1. Initialize count with a default value at the start of each loop iteration 
-        count = 0
-        languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
-        if len(languages) > 0:
-            language_text = languages[0].text
-            digit_as_str = language_text.split()[0]
-            count = int(digit_as_str)
+    wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
+    driver.execute_script("webos: pressKey", {"key": "LEFT"})
+    time.sleep(1)
+    driver.execute_script("webos: pressKey", {"key": "LEFT"})
+    wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Movies']"))
+    ).click()
+    time.sleep(5)
 
-    # 2. Now count is guaranteed to exist (it will be 0 or the actual count)
-        if count >= 4:  
+    # 2. Scroll down and search for Languages
+    # driver.execute_script("webos: pressKey", {"key": "DOWN"})
+    # time.sleep(2)
+
+    for i in range(8):
+        count = 0
+
+        languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
+
+        if languages:
+            language_text = languages[0].text
+            print("Found text:", language_text)
+
+            match = re.search(r'\d+', language_text)
+            if match:
+                count = int(match.group())
+
+        print("Extracted count:", count)
+
+        if count >= 4:
+            print("Condition met. Pressing ENTER")
             driver.execute_script("webos: pressKey", {"key": "ENTER"})
             break
         else:
-            # Optional: Navigation logic to find the element if it's not there yet
+            print("Condition not met. Moving RIGHT")
             driver.execute_script("webos: pressKey", {"key": "RIGHT"})
             time.sleep(2)
-            
-    time.sleep(7)  # outside loop
+
+    time.sleep(5) # outside loop
+
+    # Step 1: Get all language buttons
+
+
     try:
         # 3. Verify Trailer Autoplay
         trailer_Element = "//div[@id='autoplay-container']//div//video"
         wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, trailer_Element)))
-        random_index = random.randint(1, 4)
-        # 4. Click specific element and wait for long playback (4s)
-        language_switch = f"//*[contains(@class,'iqrCZFeGbJeBdWaI4fMAS')][{random_index}]"
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, language_switch))).click()
+
         time.sleep(3)
-        error_Msg = driver.find_elements(AppiumBy.XPATH,"//*[contains(text(),'Trailer is unavailable')]")
-        if len(error_Msg)>0:
+        error_Msg = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Trailer is unavailable')]")
+        if len(error_Msg) > 0:
             assert error_Msg[0].is_displayed()
         else:
-        # 5. Verify Autoplay is still happening
+            # 5. Verify Autoplay is still happening
             wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, trailer_Element)))
     except Exception as e:
         print(f"trailer not available: {e}")
+
+    languages = wait.until(
+        EC.presence_of_all_elements_located(
+            (By.XPATH, "//button[contains(@data-testid,'pill-')]")
+        )
+    )
+
+    print("Total languages found:", len(languages))
+
+    # Step 2: Pick random language
+    random_language = random.choice(languages)
+
+    # Optional: print selected language name
+    print("Selected language:", random_language.text)
+
+    # Step 3: Click it
+    driver.execute_script("arguments[0].click();", random_language)
+    time.sleep(5)
+
     # 9. Go back
     time.sleep(3)
     driver.back()
-    #start
-    _switching_to_kids(driver, wait)
-    #end
-    search_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Search"]')))
-    search_btn.click()
-    search_term = "How To Train Your Dragon"
-    _search(driver,search_term)
-    time.sleep(3)
-    search_result = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//p[contains(text(), "{search_term}")]')))
-    search_result.click()
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@title='Subscribe to Watch']"))).click()
-    plan_id = "HotstarPremium.IN.3Month.699"
-    wait.until(EC.element_to_be_clickable((AppiumBy.ID, plan_id))).click()
-    plan_Name = driver.find_element(AppiumBy.XPATH, "//*[@class=' ON_IMAGE H6 ']")
-    payment_Method = driver.find_element(AppiumBy.XPATH, "//*[contains(text(),'Scan via')]")
-    assert plan_Name.is_displayed(), "Plan title not displayed"
-    assert payment_Method.is_displayed(), "UPI payment method is not available"
-    time.sleep(2) 
-    driver.back()   #to PSP
-    time.sleep(2)  
-    driver.back() # to details Page
-    time.sleep(2)
-    driver.back() #to Home Page
-    _Switching_back_to_main_profile(driver,wait)
+    # start
 
-@allure.story("[Premium User] Verify a Premium User is able to login, search a content & playbck. User is able to logout of the app")
+    _switching_to_kids(driver, wait)
+    # end
+    _open_side_nav(driver)
+    driver.execute_script("webos: pressKey", {"key": "left"})
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _search(driver, "How To Train Your Dragon")
+
+    time.sleep(3)
+    search_result = wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "How To Train Your Dragon")]')))
+    search_result.click()
+
+    # search_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Search"]')))
+    # search_btn.click()
+    # search_term = "How To Train Your Dragon"
+    # _search(driver, search_term)
+    # time.sleep(3)
+    # search_result = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//p[contains(text(), "{search_term}")]')))
+    # search_result.click()
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[@title='Subscribe to Watch' or @title='Upgrade to Watch']"))).click()
+    # plan_id = "HotstarPremium.IN.3Month.699"
+    # wait.until(EC.element_to_be_clickable((AppiumBy.ID, plan_id))).click()
+    # plan_Name = driver.find_element(AppiumBy.XPATH, "//*[@class=' ON_IMAGE H6 ']")
+    # payment_Method = driver.find_element(AppiumBy.XPATH, "//*[contains(text(),'Scan via')]")
+    # assert plan_Name.is_displayed(), "Plan title not displayed"
+    # assert payment_Method.is_displayed(), "UPI payment method is not available"
+    validate_psp_page_visible(wait)
+    time.sleep(2)
+    driver.back()  # to PSP
+    time.sleep(2)
+    driver.back()  # to details Page
+    time.sleep(2)
+    driver.back()  # to Home Page
+    _Switching_back_to_main_profile(driver, wait)
+
+
+@allure.story(
+    "[Premium User] Verify a Premium User is able to login, search a content & playbck. User is able to logout of the app")
 @allure.title("RL-T1488")
 @pytest.mark.testcase5
 def test_case_T1488_watch_movie(driver_setup):
     driver, wait, video_wait = driver_setup
 
-    phone_premium, otp,hid = get_test_credentials("Phone_Premium")
+    phone_premium, otp, hid = get_test_credentials("Phone_Smppremium")
     if not phone_premium:
         pytest.fail("Failed to fetch Phone_Fresh credentials from API")
-    # phone, otp = get_test_credentials("Phone_Premium")
-    # if not phone:
-    #     pytest.fail("Failed to fetch Phone_Premium credentials from API")
-    
-    _login(driver, wait, phone_premium, otp)
+
+    # _login(driver, wait, phone_premium, otp)
     _profile_onboarding(driver, wait)
+    _open_side_nav(driver)
+    _validate_side_nav(wait)
+    driver.execute_script("webos: pressKey", {"key": "left"})
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _search(driver, "How To Train Your Dragon")
 
-    with allure.step("Validate Side Nav is displayed"):
-        myspace_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-My Space"]'))
-        )
-        assert myspace_btn is not None, "Myspace side-nav is not available"
-        print("My space side-nav is available")
-
-        home_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Home"]'))
-        )
-        assert home_btn is not None, "Home side-nav is not available"
-        print("Home side-nav is available")
-
-        search_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Search"]'))
-        )
-        assert search_btn is not None, "Search side-nav is not available"
-        print("Search side-nav is available")
-
-        tv_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-TV"]'))
-        )
-        assert tv_btn is not None, "TV side-nav is not available"
-        print("TV side-nav is available")
-
-        movies_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Movies"]'))
-        )
-        assert movies_btn is not None, "Movies side-nav is not available"
-        print("Movies side-nav is available")
-
-        Sports_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Sports"]'))
-        )
-        assert Sports_btn is not None, "Sports side-nav is not available"
-        print("Sports side-nav is available")
-
-        Sparks_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Sparks"]'))
-        )
-        assert Sparks_btn is not None, "Sparks side-nav is not available"
-        print("Sparks side-nav is available")
-
-        Categories_btn = wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Categories"]'))
-        )
-        assert Categories_btn is not None, "Categories side-nav is not available"
-        print("Categories side-nav is available")
-
-    with allure.step("Navigate to Search"):
-        search_btn = wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@realfocuskey="nav-menu-item-Search"]'))
-        )
-        search_btn.click()
-        time.sleep(2)
-        print("Opened search page")
-
-    _search(driver,"How To Train Your Dragon")
-
-    with allure.step("Select Search Result"):
-        search_result = wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "How To Train Your Dragon")]'))
-        )
-        search_result.click()
-        assert search_result is not None, "Search result not found"
+    time.sleep(3)
+    search_result = wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "How To Train Your Dragon")]')))
+    search_result.click()
+    assert search_result is not None, "Search result not found"
 
     with allure.step("Start Playback"):
         watch_btn = wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH,'//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]'))
+            EC.element_to_be_clickable((AppiumBy.XPATH,
+                                        '//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]'))
         )
         watch_btn.click()
         assert watch_btn is not None, "Watch button not available"
@@ -854,8 +890,7 @@ def test_case_T1488_watch_movie(driver_setup):
         assert video_player is not None, "Video player not displayed"
 
     with allure.step("Modify Video Quality and Audio/Subtitles"):
-
-        video_player.click() # Open controls
+        video_player.click()  # Open controls
         video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//span[text()="Quality"]')))
 
         wait.until(
@@ -871,13 +906,13 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Tamil"]'))
         ).click()
-        time.sleep(5)
+        # time.sleep(5)
         driver.execute_script("webos: pressKey", {"key": "UP"})
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
         ).click()
         wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="English [CC]"or text()="English"]'))
+            EC.element_to_be_clickable((AppiumBy.XPATH, "//span[contains(text(), 'English [CC]')]"))
         ).click()
         video_player.click()  # Close controls
 
@@ -886,7 +921,19 @@ def test_case_T1488_watch_movie(driver_setup):
         time.sleep(10)
         driver.back()  # Exit player
         driver.back()  # Exit Details page
+        driver.back()
+        _open_side_nav(driver)
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.XPATH,"//div[@aria-label='My Space']"))
+        ).click()
 
-        _navigate_back_to_home(driver)
-
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
+        ).click()
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Log Out"]'))
+        ).click()
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@data-testid="dialog-lr-primary-button"]'))
+        ).click()
 

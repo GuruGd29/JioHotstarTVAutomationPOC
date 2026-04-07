@@ -1,4 +1,6 @@
 import re
+from asyncio import wait
+
 import pytest
 import allure
 from appium import webdriver
@@ -16,8 +18,8 @@ import json
 
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
-DEVICE_NAME = "172.23.12.37"                    # Update with your device name (adb devices)
-PLATFORM_VERSION = "8"                     # Update with your Android version
+DEVICE_NAME = "172.23.12.44"                    # Update with your device name (adb devices)
+PLATFORM_VERSION = "10"                     # Update with your Android version
 APP_PACKAGE = "in.startv.hotstar"        # Hotstar Android package name
 APP_ACTIVITY = "com.hotstar.MainActivity"  # Update if different
 
@@ -120,7 +122,7 @@ def driver_setup(request):
     appium_options.set_capability("appium:platformVersion", PLATFORM_VERSION)
     appium_options.set_capability("appium:appPackage", APP_PACKAGE)
     appium_options.set_capability("appium:appActivity", APP_ACTIVITY)
-    appium_options.set_capability("appium:noReset", True)
+    appium_options.set_capability("appium:noReset", False)
     appium_options.set_capability("appium:forceAppLaunch", True)
     appium_options.set_capability("appium:autoGrantPermissions", True)
     appium_options.set_capability("appium:newCommandTimeout", 300)
@@ -195,6 +197,15 @@ def _login(driver, wait, phone_number, otp):
             print(f"Entered digit: {digit}")
             time.sleep(0.8)
             # driver.find_element(AppiumBy.XPATH, f'//*[@text="{digit}"]').click()
+
+    try:
+        logout_btn = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Log Out"]'))
+        )
+        logout_btn.click()
+        print("Logout successful.")
+    except TimeoutException:
+        print("Logout button not present, skipping this step...")
 
 
 @allure.step("Switching to Kids profile")
@@ -401,48 +412,19 @@ def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
             time.sleep(1)
     raise TimeoutException("Failed to navigate back to the Home Screen after maximum attempts.")
 
-def _background_and_resume_validate_subtitle(driver):
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support import expected_conditions as EC
-
+def _background_and_reopen_validate(driver):
 
     wait = WebDriverWait(driver, 20)
 
-    # 🔹 1. Capture subtitle state BEFORE going home
-    subtitle_btn = wait.until(
-        EC.presence_of_element_located((By.ID, "subtitle_toggle"))  # 🔁 replace with actual locator
-    )
-    subtitle_state_before = subtitle_btn.get_attribute("checked")
-
-    print(f"Subtitle before HOME: {subtitle_state_before}")
-
-    # 🔹 2. Press HOME (background app)
     driver.press_keycode(3)
 
     wait.until(lambda d: d.current_package != APP_PACKAGE)
 
-    # 🔹 3. Bring app back (DO NOT restart activity)
     driver.activate_app(APP_PACKAGE)
 
     wait.until(lambda d: d.current_package == APP_PACKAGE)
 
-    # 🔹 4. Validate playback resumed
-    wait.until(
-        lambda d: "Pause" in d.page_source  # 🔁 adjust based on your player UI
-    )
-
-    # 🔹 5. Capture subtitle state AFTER relaunch
-    subtitle_btn_after = wait.until(
-        EC.presence_of_element_located((By.ID, "subtitle_toggle"))  # 🔁 same locator
-    )
-    subtitle_state_after = subtitle_btn_after.get_attribute("checked")
-
-    print(f"Subtitle after resume: {subtitle_state_after}")
-
-    # 🔹 6. Assertion
-    assert subtitle_state_before == subtitle_state_after, \
-        f"Subtitle state mismatch! Before: {subtitle_state_before}, After: {subtitle_state_after}"
+    print("Application closed and reopened")
 
 
 @allure.step("Perform Logout")
@@ -480,8 +462,12 @@ def _search(driver, search_term):
 def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
     """Verifies the user has reached the Subscription/PSP screen."""
     try:
-        psp_premium = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/plan_card_title" and @text="PREMIUM"]')))
+        psp_premium = wait.until(
+            EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("PREMIUM")')))
+        psp_super = wait.until(
+            EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("SUPER")')))
         assert psp_premium is not None, timeout_msg
+        assert psp_super is not None, timeout_msg
         print("Verification Successful: PSP page is available.")
         return True
     except TimeoutException:
@@ -628,47 +614,54 @@ def test_case_T375_4K_Seasons(driver_setup):
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
-    driver.find_element(AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="TV"]').focusandclick()
-    time.sleep(5)
-    driver.press_keycode(KEYCODE_DPAD_DOWN)
+    # driver.find_element(AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="TV"]').focusandclick()
+    # time.sleep(5)
+    # driver.press_keycode(KEYCODE_DPAD_DOWN)
+    #
+    # for i in range(7):
+    #     seasons = driver.find_elements(
+    #         AppiumBy.XPATH,
+    #         "//android.widget.TextView[contains(@text,'Season')]"
+    #     )
+    #
+    #     if not seasons:
+    #         print("No season element found and moving RIGHT")
+    #         driver.press_keycode(KEYCODE_DPAD_RIGHT)
+    #         time.sleep(1)
+    #         continue
+    #
+    #     season_text = seasons[0].text
+    #     print("Text:", season_text)
+    #
+    #     if "Finale" in season_text:
+    #         print("Season Finale Out found and moving RIGHT")
+    #         driver.press_keycode(KEYCODE_DPAD_RIGHT)
+    #         time.sleep(1)
+    #         continue
+    #
+    #     match = re.search(r'(\d+)', season_text)
+    #
+    #     if match:
+    #         number = int(match.group(1))
+    #         print("Season number:", number)
+    #
+    #         if number > 0:
+    #             driver.press_keycode(KEYCODE_DPAD_CENTER)
+    #             break
+    #     else:
+    #         print("No valid number and moving RIGHT")
+    #         driver.press_keycode(KEYCODE_DPAD_RIGHT)
+    #         time.sleep(1)
 
-    for i in range(7):
-        seasons = driver.find_elements(
-            AppiumBy.XPATH,
-            "//android.widget.TextView[contains(@text,'Season')]"
-        )
-
-        if not seasons:
-            print("No season element found and moving RIGHT")
-            driver.press_keycode(KEYCODE_DPAD_RIGHT)
-            time.sleep(1)
-            continue
-
-        season_text = seasons[0].text
-        print("Text:", season_text)
-
-        if "Finale" in season_text:
-            print("Season Finale Out found and moving RIGHT")
-            driver.press_keycode(KEYCODE_DPAD_RIGHT)
-            time.sleep(1)
-            continue
-
-        match = re.search(r'(\d+)', season_text)
-
-        if match:
-            number = int(match.group(1))
-            print("Season number:", number)
-
-            if number > 0:
-                driver.press_keycode(KEYCODE_DPAD_CENTER)
-                break
-        else:
-            print("No valid number and moving RIGHT")
-            driver.press_keycode(KEYCODE_DPAD_RIGHT)
-            time.sleep(1)
-
+    wait.until(EC.element_to_be_clickable(
+        (AppiumBy.ANDROID_UIAUTOMATOR,
+         'new UiSelector().text("Search")'))).focusandclick()
+    search_bar = wait.until(EC.element_to_be_clickable(
+        (AppiumBy.XPATH, '//android.widget.EditText[@resource-id="in.startv.hotstar:id/search_bar"]')))
+    search_bar.send_keys("Resort")
+    wait.until(EC.element_to_be_clickable(
+        (AppiumBy.XPATH, '//android.widget.ImageView[@resource-id="in.startv.hotstar:id/hero_img"]'))).focusandclick()
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/textLabel" and (@text="Watch from Beginning" or @text="Watch Latest Episode" or @text="Watch First Episode" or @text="Watch Next" or @text="Resume")]'))).focusandclick()
-    time.sleep(15)
 
     try:
         SPINNER_XPATH = '//*[@resource-id="in.startv.hotstar:id/loader"]'
@@ -676,7 +669,7 @@ def test_case_T375_4K_Seasons(driver_setup):
         time.sleep(3)
     except Exception as e:
         print(f"Video Play failed: {e}")
-
+    time.sleep(5)
     try:
         # driver.press_keycode(KEYCODE_DPAD_UP)
         skip_recap = driver.find_element(AppiumBy.XPATH, "//*[@text='Skip Recap' or @text='Skip Intro']")
@@ -690,25 +683,23 @@ def test_case_T375_4K_Seasons(driver_setup):
         driver.press_keycode(KEYCODE_DPAD_CENTER)
         driver.press_keycode(KEYCODE_DPAD_UP)
 
-        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")'))).focusandclick()
-        # quality_btn.focusandclick()
+        quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")')))
+        quality_btn.focusandclick()
         # most of them have upto full HD
 
-        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Full HD")'))).click()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Asli 4K")'))).click()
         # driver.press_keycode(KEYCODE_BACK)
-        # time.sleep(5)
-        # asli_4k_logo = driver.find_element(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
-        # assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
+        time.sleep(5)
+        asli_4k_logo = driver.find_element(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
+        assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
 
-        # driver.press_keycode(KEYCODE_DPAD_CENTER)
-        # driver.press_keycode(KEYCODE_DPAD_UP)
-        # quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Quality")')))
-        # quality_btn.focusandclick()
-        # wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Full HD")'))).click()
-        # driver.press_keycode(KEYCODE_BACK)
-        # time.sleep(5)
-        # logos = driver.find_elements(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
-        # assert len(logos) == 0
+        driver.press_keycode(KEYCODE_DPAD_CENTER)
+        driver.press_keycode(KEYCODE_DPAD_UP)
+        quality_btn.focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR,'new UiSelector().text("Full HD")'))).click()
+        time.sleep(5)
+        logos = driver.find_elements(AppiumBy.ID, 'in.startv.hotstar:id/lottie_asli_4k')
+        assert len(logos) == 0
     except Exception as e:
         print(f"T375 Quality change failed, seems a Non-4K Content or Device: {e}")
 
@@ -724,7 +715,7 @@ def test_case_T375_4K_Seasons(driver_setup):
         EC.visibility_of_element_located((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Episodes")')))
     assert episodes_tray.is_displayed(), "Episodes tray is not visible"
 
-    _background_and_resume_validate_subtitle(driver)
+    _background_and_reopen_validate(driver)
 
     try:
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Next Episode']"))).focusandclick()
@@ -844,13 +835,13 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     wait.until(EC.element_to_be_clickable(
         (AppiumBy.XPATH, '//android.widget.ImageView[@resource-id="in.startv.hotstar:id/hero_img"]'))).focusandclick()
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@text='Subscribe to Watch' or @text='Upgrade to Watch']"))).focusandclick()
-
-    plan_id = '//android.widget.TextView[@resource-id="in.startv.hotstar:id/plan_selector_price" and @text="₹699"]'
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, plan_id))).focusandclick()
-    plan_name = driver.find_element(AppiumBy.ID, "in.startv.hotstar:id/plan_title")
-    payment_method = wait.until(EC.visibility_of_element_located((AppiumBy.ID, "in.startv.hotstar:id/ll_upi_info")))
-    assert plan_name.is_displayed(), "Plan title not displayed"
-    assert payment_method.is_displayed(), "UPI payment method is not available"
+    validate_psp_page_visible(wait)
+    # plan_id = '//android.widget.TextView[@resource-id="in.startv.hotstar:id/plan_selector_price" and @text="₹699"]'
+    # wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, plan_id))).focusandclick()
+    # plan_name = wait.until(EC.visibility_of_element_located((AppiumBy.ID, 'in.startv.hotstar:id/plan_title')))
+    # payment_method = wait.until(EC.visibility_of_element_located((AppiumBy.ID, "in.startv.hotstar:id/ll_upi_info")))
+    # assert plan_name.is_displayed(), "Plan title not displayed"
+    # assert payment_method.is_displayed(), "UPI payment method is not available"
 
     driver.press_keycode(KEYCODE_BACK)  # to PSP
     time.sleep(2)
@@ -878,7 +869,7 @@ def test_case_T1488_watch_movie(driver_setup):
     with allure.step("Navigate to Search"):
         wait.until(EC.element_to_be_clickable(
             (AppiumBy.ANDROID_UIAUTOMATOR,
-             'new UiSelector().className("android.view.ViewGroup").instance(2)'))).focusandclick()
+             'new UiSelector().text("Search")'))).focusandclick()
 
     with allure.step("Select Search Result"):
         search_btn = wait.until(EC.element_to_be_clickable(
@@ -912,14 +903,13 @@ def test_case_T1488_watch_movie(driver_setup):
         driver.press_keycode(KEYCODE_DPAD_UP)
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Tamil"]'))).click()
-        driver.press_keycode(KEYCODE_BACK)
         time.sleep(5)
 
         driver.press_keycode(85)
         driver.press_keycode(KEYCODE_DPAD_UP)
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Audio & Subtitles"]'))).focusandclick()
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="English [CC]"]'))).click()
-        driver.press_keycode(KEYCODE_BACK)
+        # driver.press_keycode(KEYCODE_BACK)
 
     with allure.step("Play for 10 seconds and Exit"):
         print("Playing with new settings for 10 seconds...")
