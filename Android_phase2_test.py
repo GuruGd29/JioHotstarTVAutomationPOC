@@ -412,6 +412,7 @@ def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
             time.sleep(1)
     raise TimeoutException("Failed to navigate back to the Home Screen after maximum attempts.")
 
+@allure.step("Send app to background using HOME and relaunch the app")
 def _background_and_reopen_validate(driver):
 
     wait = WebDriverWait(driver, 20)

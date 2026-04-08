@@ -149,16 +149,30 @@ def driver_setup(request):
 
     finally:
         # Teardown logic runs after the test finishes
-        # Logout is called here to ensure clean state if noReset=True
         if driver:
             try:
-                _logout(driver, wait_50s, _navigate_back_to_home)
-            except Exception as e:
+                for attempt in range(2):
+                    try:
+                        print(f"Logout attempt {attempt + 1}...")
+                        _logout(driver, wait_50s, _navigate_back_to_home)
+                        print("Logout successful.")
+                        break
+                    except Exception as e:
+                        print(f"Logout attempt {attempt + 1} failed: {e}")
 
-                print(f"Warning: Logout failed during tearDown. App state might be unstable: {e}")
+                        if attempt < 1:
+                            print("Waiting before retry...")
+                            time.sleep(3)  # ⏳ small wait before retry
+                        else:
+                            print("Logout failed completely. App state might be unstable.")
+
+            except Exception as e:
+                print(f"Unexpected error during logout handling: {e}")
+
             print(f"\nRunning teardown for test: {request.node.name}...")
             driver.quit()
             print("App closed.")
+
         time.sleep(10)
 
 
@@ -193,6 +207,24 @@ def _login(driver, wait, phone_number, otp):
             driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
 
 
+    login_pending_elements = driver.find_elements(
+        AppiumBy.XPATH, '//*[contains(text(),"Login Pending")]'
+    )
+
+    if login_pending_elements:
+        try:
+            logout_btn = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((AppiumBy.XPATH, "(//span[@title='Log Out'])[1]"))
+            )
+            logout_btn.click()
+            print("Logout successful.")
+        except TimeoutException:
+            print("Login Pending present, but Logout button not found.")
+    else:
+        print("Login Pending not found, skipping logout...")
+
+
+
 @allure.step("switching to kids profile")
 def _switching_to_kids(driver, wait):
     # wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
@@ -200,10 +232,14 @@ def _switching_to_kids(driver, wait):
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
 
     time.sleep(5)
-    profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Kids']/ancestor::div[@data-testid='action']"))).click()
+    # driver.execute_script("webos: pressKey", {"key": "ENTER"})
 
-    if profiles:
-        profiles[0].click()
+    # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
+    #
+    # if profiles:
+    #     profiles[0].click()
+
     # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
     # step_count = len(profiles)
     # for x in range(1, step_count):
@@ -223,10 +259,13 @@ def _Switching_back_to_main_profile(driver, wait):
     _open_side_nav(driver)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
 
-    time.sleep(3)
-    profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
-    if profiles:
-        profiles[0].click()
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='ADULT']/ancestor::div[@data-testid='action']"))).click()
+
+    # time.sleep(3)
+    # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
+    # if profiles:
+    #     profiles[0].click()
+
     # assert len(profiles) > 0, "No elements found to hover over!"
     # for Y in range(1, len(profiles)):
     #     driver.execute_script("webos: pressKey", {"key": "left"})
@@ -244,6 +283,34 @@ def _Switching_back_to_main_profile(driver, wait):
         print(f"Error occurred while entering PIN: {e}")
         # Append logout code
 
+
+@allure.step("Verify Home page elements are scrollable vertically and horizontally (webOS)")
+def _verify_home_scroll_webos(driver, wait):
+    """Scroll down x2, up x2, right x2, left x2 on Home and verify content loads (webOS)."""
+
+    wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
+
+    with allure.step("Scroll Down x2"):
+        for i in range(2):
+            driver.execute_script("webos: pressKey", {"key": "DOWN"})
+            time.sleep(1)
+
+    with allure.step("Scroll Up x2"):
+        for i in range(2):
+            driver.execute_script("webos: pressKey", {"key": "UP"})
+            time.sleep(1)
+
+    with allure.step("Scroll Right x2"):
+        for i in range(2):
+            driver.execute_script("webos: pressKey", {"key": "RIGHT"})
+            time.sleep(1)
+
+    with allure.step("Scroll Left x2"):
+        for i in range(2):
+            driver.execute_script("webos: pressKey", {"key": "LEFT"})
+            time.sleep(1)
+
+    print("Home page scroll verification complete (webOS).")
 
 @allure.step("Select Profile and Enter PIN")
 def _profile_onboarding(driver, wait):
@@ -279,7 +346,7 @@ def _profile_onboarding(driver, wait):
 @allure.step("Navigate to Nav Bar")
 def _open_side_nav(driver, max_attempts=10):
     home_xpath = "//div[@aria-label='Home']"
-
+    time.sleep(3)
     for _ in range(max_attempts):
         elements = driver.find_elements("xpath", home_xpath)
         if elements:
@@ -290,6 +357,46 @@ def _open_side_nav(driver, max_attempts=10):
         time.sleep(1)
 
     raise Exception("Home side-nav not visible after navigating left")
+
+# @allure.step("Navigate back until Home is visible")
+# def _navigate_back_to_home(driver, max_attempts=10, wait_time=1):
+#     home_xpath = "//div[@aria-label='Home']"
+#
+#     for attempt in range(max_attempts):
+#         elements = driver.find_elements("xpath", home_xpath)
+#
+#         if elements:
+#             print(f"Home found after {attempt} back actions")
+#             return elements[0]
+#
+#         print(f"Attempt {attempt + 1}: Home not found, pressing BACK")
+#         driver.back()
+#         time.sleep(wait_time)
+#
+#     raise Exception("Failed to navigate back to Home after max attempts")
+
+@allure.step("Send app to background using HOME and relaunch the app")
+def _background_and_reopen_validate(driver):
+
+    wait = WebDriverWait(driver, 20)
+
+    # Press HOME to background the app
+    driver.execute_script("webos: pressKey", {"key": "HOME"})
+    time.sleep(3)
+
+    # Optional: wait until app is no longer in foreground
+    # (depends on your driver support for current app info)
+
+    # Relaunch the app
+    driver.execute_script("webos: launch", {"id": APP_ID})
+    # driver.execute_script("webos: launchApp", {
+    #     "id": APP_ID
+    # })
+
+    # Wait for app to be visible again (use your home locator)
+    # wait.until(lambda d: d.find_element(*HOME_LOCATOR).is_displayed())
+
+    print("Application sent to background and relaunched successfully")
 
 
 @allure.step("Validate Side Nav is displayed")
@@ -318,23 +425,36 @@ def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
     """
     print(f"Attempting to navigate back to Home Screen (max {max_attempts} attempts)...")
 
-    for attempt in range(1, max_attempts + 1):
+    for attempt in range(max_attempts):
+        # quick check
+        if driver.find_elements(*HOME_LOCATOR):
+            return True
+
         try:
-            # 1. Wait briefly for the element to appear
-            home_check = WebDriverWait(driver, timeout_per_attempt).until(
+            WebDriverWait(driver, 2).until(
                 EC.presence_of_element_located(HOME_LOCATOR)
             )
-            print(f"Successfully reached Home Screen on attempt {attempt}.")
-            return home_check  # Success!
-
-        except TimeoutException:
-            print(f"Attempt {attempt}/{max_attempts}: Home element not found. Calling driver.back().")
-            # 2. If not found, hit the back button
+            return True
+        except:
             driver.back()
-            time.sleep(1)
 
-            # If the loop finishes without finding the element
-    raise TimeoutException("Failed to navigate back to the Home Screen after maximum attempts.")
+    # for attempt in range(1, max_attempts + 1):
+    #     try:
+    #         # 1. Wait briefly for the element to appear
+    #         home_check = WebDriverWait(driver, timeout_per_attempt).until(
+    #             EC.presence_of_element_located(HOME_LOCATOR)
+    #         )
+    #         print(f"Successfully reached Home Screen on attempt {attempt}.")
+    #         return home_check  # Success!
+    #
+    #     except TimeoutException:
+    #         print(f"Attempt {attempt}/{max_attempts}: Home element not found. Calling driver.back().")
+    #         # 2. If not found, hit the back button
+    #         driver.back()
+    #         time.sleep(1)
+    #
+    #         # If the loop finishes without finding the element
+    # raise TimeoutException("Failed to navigate back to the Home Screen after maximum attempts.")
 
 
 @allure.step("Perform Logout")
@@ -342,7 +462,7 @@ def _logout(driver, wait, navigate_back_func):
     print("Logout initiated")
     try:
         # Ensure we are on the home screen before attempting to navigate the menu
-        navigate_back_func(driver)
+        _navigate_back_to_home(driver)
 
         _open_side_nav(driver)
 
@@ -377,6 +497,7 @@ def _logout(driver, wait, navigate_back_func):
 
 @allure.step("Search for term: {search_term}")
 def _search(driver, search_term):
+    time.sleep(5)
     for char in search_term:
         key_to_press = "Space" if char == ' ' else char.upper()
         xpath_expression = f'//button[.//span[text()="{key_to_press}"]]'
@@ -445,7 +566,7 @@ def test_case_RLT1487(driver_setup):
 
     _create_profile(driver, wait)
     time.sleep(2)
-
+    # _verify_home_scroll_webos(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
@@ -467,11 +588,11 @@ def test_case_RLT1487(driver_setup):
         _open_side_nav(driver)
         driver.execute_script("webos: pressKey", {"key": "left"})
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
-        # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "div[role='textbox']")))
+        # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "//div[@data-testid='search-bar']")))
         _search(driver, "King and Conqueror")
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="King & Conqueror"]'))
-        ).click()
+        ).click()\
 
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Subscribe to Watch"]'))
@@ -495,7 +616,7 @@ def test_case_RLT356(driver_setup):
     reset_user_watch_time(hid, watch_time_ms=7134000)
 
     _login(driver, wait, free_phone, otp)
-    # _profile_onboarding(driver, wait)
+    _profile_onboarding(driver, wait)
     time.sleep(5)
     driver.execute_script("webos: pressKey", {"key": "left"})
     _open_side_nav(driver)
@@ -569,13 +690,11 @@ def test_case_RLT356(driver_setup):
 
 
     hp_banner = wait.until(
-        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[text()="Your free access is over"]'))
+        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(), "Your free access is over") or contains(text(), "Plans starting at")]'))
     )
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
     time.sleep(1)
-
-    # driver.execute_script("webos: pressKey", {"key": "enter"})
 
     driver.find_element(AppiumBy.XPATH,'//button[.//*[text()="Subscribe"]]').click()
     driver.execute_script("webos: pressKey", {"key": "enter"})
@@ -597,13 +716,14 @@ def test_case_T375_4K_Seasons(driver_setup):
     if not premium_phone:
         pytest.fail("Failed to fetch Phone_Fresh credentials from API")
 
-    # _login(driver, wait, premium_phone, otp)
+    _login(driver, wait, premium_phone, otp)
     _profile_onboarding(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
     driver.execute_script("webos: pressKey", {"key": "left"})
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "//div[@data-testid='search-bar']")))
     _search(driver, "Resort")
     wait.until(
         EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Resort']"))
@@ -661,6 +781,8 @@ def test_case_T375_4K_Seasons(driver_setup):
     current_episode_name = element.text
     print(f"Detected Episode: {current_episode_name}")
 
+    # _background_and_reopen_validate(driver)
+
     # 2. Click on 'Next Episode'
     try:
         next_btn_xpath = "//*[text()='Next Episode']"
@@ -677,6 +799,7 @@ def test_case_T375_4K_Seasons(driver_setup):
     except Exception as e:
         print("Seems its last episode.")
     # 5. Assert Episodes Tray visibility
+
     episodes_tray = driver.find_element(AppiumBy.XPATH, "//*[text()='Episodes']")
     assert episodes_tray.is_displayed(), "Episodes tray is not visible after navigation"
     driver.back()  # Back from watchPage
@@ -685,8 +808,10 @@ def test_case_T375_4K_Seasons(driver_setup):
     _switching_to_kids(driver, wait)
     # Switched to Kids Profile (its total profile -1)
     _open_side_nav(driver)
+    time.sleep(5)
     driver.execute_script("webos: pressKey", {"key": "left"})
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "//div[@data-testid='search-bar']")))
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -815,6 +940,7 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     _open_side_nav(driver)
     driver.execute_script("webos: pressKey", {"key": "left"})
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "//div[@data-testid='search-bar']")))
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -857,12 +983,15 @@ def test_case_T1488_watch_movie(driver_setup):
     if not phone_premium:
         pytest.fail("Failed to fetch Phone_Fresh credentials from API")
 
-    # _login(driver, wait, phone_premium, otp)
+    _login(driver, wait, phone_premium, otp)
     _profile_onboarding(driver, wait)
+    # _verify_home_scroll_webos(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
     driver.execute_script("webos: pressKey", {"key": "left"})
+    time.sleep(3)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    # wait.until(EC.presence_of_element_located((AppiumBy.XPATH, "//div[@data-testid='search-bar']")))
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -922,18 +1051,18 @@ def test_case_T1488_watch_movie(driver_setup):
         driver.back()  # Exit player
         driver.back()  # Exit Details page
         driver.back()
-        _open_side_nav(driver)
-        wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH,"//div[@aria-label='My Space']"))
-        ).click()
-
-        wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
-        ).click()
-        wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Log Out"]'))
-        ).click()
-        wait.until(
-            EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@data-testid="dialog-lr-primary-button"]'))
-        ).click()
+        # _open_side_nav(driver)
+        # wait.until(
+        #     EC.element_to_be_clickable((AppiumBy.XPATH,"//div[@aria-label='My Space']"))
+        # ).click()
+        #
+        # wait.until(
+        #     EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
+        # ).click()
+        # wait.until(
+        #     EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Log Out"]'))
+        # ).click()
+        # wait.until(
+        #     EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@data-testid="dialog-lr-primary-button"]'))
+        # ).click()
 

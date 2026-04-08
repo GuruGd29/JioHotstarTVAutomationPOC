@@ -1,0 +1,20 @@
+
+Setting up driver for test: test_case_T375_4K_Seasons...
+App launched successfully.
+Usertoken: 907b204e-d96a-4092-b358-c48642fec7d5
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzU2NzAzMjAsImp0aSI6IjJkYWEyMTNjLTIxZjktNDlmNi05M2Y1LTY3NjVlMGQ3ZjAxNiIsImlhdCI6MTc3NTYyNzExOCwibmJmIjoxNzc1NjI3MTE4LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.YWnsnaNJ_o1Xz2usBYp0w_frPkFnXXYh95kOx931oK1YnnmiCQ4pnnx0fvOOSJ-Uj3yTFdRS5Yhps1LPhYmTCA; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI5MDdiMjA0ZS1kOTZhLTQwOTItYjM1OC1jNDg2NDJmZWM3ZDUiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc1NjI3NDQ2fQ.bJwWAvlRAlkh_CsB8bVVndmnRmdTf1kWYC7vrQCAPY8; xsrfToken=907b204e-d96a-4092-b358-c48642fec7d5; xsrfTokenSameSite=907b204e-d96a-4092-b358-c48642fec7d5
+Profile selection started
+Parental lock is not available for this user. Proceeding...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Attempt 1/5: Home element not found. Calling driver.back().
+Attempt 2/5: Home element not found. Calling driver.back().
+Attempt 3/5: Home element not found. Calling driver.back().
+Attempt 4/5: Home element not found. Calling driver.back().
+Attempt 5/5: Home element not found. Calling driver.back().
+⚠️ Error during logout: Message: Failed to navigate back to the Home Screen after maximum attempts.
+
+Warning: Logout failed during tearDown. App state might be unstable: module 'pytest' has no attribute 'current_test'
+
+Running teardown for test: test_case_T375_4K_Seasons...
+App closed.
