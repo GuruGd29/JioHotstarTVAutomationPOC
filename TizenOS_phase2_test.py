@@ -16,12 +16,12 @@ import json
 
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
-DEVICE_NAME = "SamsungTV"                        # ← changed
-DEVICE_HOST = "172.23.12.114"                     # ← your Samsung TV IP
+DEVICE_NAME = "SamsungTV"
+DEVICE_HOST = "172.23.12.114"
 # fiZNCxMH9Y.Hotstar,Di0N6xZMEA.disneyplushotstarIN
-APP_PACKAGE = "fiZNCxMH9Y.Hotstar"        # ← changed (get from sdb shell 0 applist)
-RC_TOKEN = "78386716"  # ← add your paired token
-CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver.exe"  # ← folder path, not file
+APP_PACKAGE = "Di0N6xZMEA.disneyplushotstarIN"
+RC_TOKEN = "47480317"  # ← add your paired token
+CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe"
 
 # Static Test Data
 User_Cookie = None
@@ -83,7 +83,7 @@ def get_test_credentials(user_type="Phone_Fresh_User"):
         else:
             return None, None
     except Exception as e:
-        print(f"❌ API Request Failed: {e}")
+        print(f"API Request Failed: {e}")
         return None, None
 
 
@@ -106,7 +106,7 @@ def reset_user_watch_time(hid, watch_time_ms):
         print(f"Successfully updated watch time for {hid} to {watch_time_ms}ms")
         return response.json()
     except Exception as e:
-        print(f"⚠️ Failed to reset watch time: {e}")
+        print(f"Failed to reset watch time: {e}")
         return None
 
 
@@ -122,12 +122,12 @@ def driver_setup(request):
     appium_options.platform_name = "TizenTV"
     appium_options.automation_name = "TizenTV"
     appium_options.set_capability("appium:deviceName", f"{DEVICE_HOST}:26101")
-    appium_options.set_capability("appium:appPackage", "Di0N6xZMEA.disneyplushotstarIN")
+    appium_options.set_capability("appium:appPackage", APP_PACKAGE)
     appium_options.set_capability("appium:noReset", False)
     appium_options.set_capability("appium:rcMode", "remote")
     appium_options.set_capability("appium:rcToken", RC_TOKEN)
     # appium_options.set_capability("appium:rcOnly", True)
-    appium_options.set_capability("appium:chromedriverExecutable", "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe")
+    appium_options.set_capability("appium:chromedriverExecutable", CHROMEDRIVER_DIR)
     appium_options.set_capability("appium:newCommandTimeout", 300)
     appium_options.set_capability("appium:rcKeypressCooldown", 1000)
     appium_options.set_capability("appium:sendKeysStrategy", "rc")
@@ -183,9 +183,6 @@ def driver_setup(request):
 
 # --- Tizen Key Press Helper ---
 
-# Tizen remote key name mapping
-# Correct syntax: driver.execute_script('tizen: pressKey', {'key': 'KEY_UP'})
-# Note: space after 'tizen:' is required, and keys use the 'KEY_' prefix
 TIZEN_KEYS = {
     "ArrowLeft":  "KEY_LEFT",
     "ArrowRight": "KEY_RIGHT",
@@ -201,13 +198,44 @@ TIZEN_KEYS = {
 def _press_key(driver, key):
     """
     Sends a remote control key press on Tizen TV.
-    Accepts friendly names (e.g. 'ArrowLeft') or raw Tizen KEY_ codes directly.
-    Correct Tizen syntax: driver.execute_script('tizen: pressKey', {'key': 'KEY_LEFT'})
-    - Note the space between 'tizen:' and 'pressKey' — required by the driver.
-    - Keys must use the 'KEY_' prefix as per Samsung Tizen Appium driver docs.
+    Accepts friendly names (e.g. 'ArrowLeft') or raw KEY_ codes directly.
     """
-    tizen_key = TIZEN_KEYS.get(key, key)  # pass-through if already a KEY_ code
+    tizen_key = TIZEN_KEYS.get(key, key)
     driver.execute_script("tizen: pressKey", {"key": tizen_key})
+
+
+def  _tizen_js_click(driver, element):
+    """
+    Fires a click event directly on a DOM element via JavaScript, bypassing
+    chromedriver's coordinate-based tap. Use this for any element that may
+    shift position during a page transition or animation on Tizen TV.
+    """
+    driver.execute_script("arguments[0].click();", element)
+
+
+def _nav_click(driver, wait, xpath, label="nav item"):
+    """
+    Tizen-safe side-nav click. Always use this instead of bare .click()
+    when interacting with the side navigation bar.
+
+    Steps:
+      1. Sleep 2s  — lets CSS transition/slide animation fully settle so the
+                     nav bar is at its final resting position before we resolve
+                     the element's coordinates.
+      2. scrollIntoView — ensures the element is in the visible viewport.
+      3. Sleep 0.5s — tiny buffer after scroll before firing the event.
+      4. JS click  — dispatches the click event on the DOM node directly,
+                     sidestepping chromedriver's coordinate lookup entirely.
+    """
+    print(f"[_nav_click] Waiting for nav to settle before clicking: {label}")
+    time.sleep(2)  # wait for any page transition / animation to finish
+
+    element = wait.until(EC.presence_of_element_located((AppiumBy.XPATH, xpath)))
+    driver.execute_script("arguments[0].scrollIntoView({block:'center'});", element)
+    time.sleep(0.5)  # small buffer after scrollIntoView before firing click
+
+    _tizen_js_click(driver, element)
+    print(f"[_nav_click] Clicked: {label}")
 
 
 # --- Reusable Utility Helpers ---
@@ -225,7 +253,7 @@ def _login(driver, wait, phone_number, otp):
     #     print("Continue button not found, proceeding...")
 
     # 2. Enter Phone Number
-    # wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//div[@role='textbox']")))
+    wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//div[@role='textbox']")))
     with allure.step("Entering phone number digits"):
         for digit in phone_number:
             driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
@@ -347,12 +375,13 @@ def _profile_onboarding(driver, wait):
 def _open_side_nav(driver, max_attempts=10):
     home_xpath = "//div[@aria-label='Home']"
     time.sleep(3)
+    # driver.execute_script("tizen: pressKey", {"key": "KEY_ENTER"})
+    time.sleep(2)
     for _ in range(max_attempts):
         elements = driver.find_elements("xpath", home_xpath)
         if elements:
             return elements[0]
 
-        # --- Tizen: use ArrowLeft instead of webOS "left" ---
         _press_key(driver, "ArrowLeft")
         time.sleep(1)
 
@@ -369,7 +398,7 @@ def _background_and_reopen_validate(driver):
     time.sleep(3)
 
     # --- Tizen: Relaunch the app using tizen:launchApp ---
-    driver.execute_script("tizen:launchApp", {"appId": APP_ID})
+    driver.execute_script("tizen:launchApp", {"appId": APP_PACKAGE})
 
     print("Application sent to background and relaunched successfully")
 
@@ -426,6 +455,14 @@ def _logout(driver, wait, navigate_back_func):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))
         ).click()
+        try:
+            help_settings = wait.until(
+                EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
+            )
+        except TimeoutException:
+            print("Help & Settings not found — likely kids profile. Switching to adult.")
+
+            _Switching_back_to_main_profile(driver,wait)
 
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
@@ -508,7 +545,6 @@ def _create_profile(driver, wait):
 @allure.story(
     "[Fresh User] Verify a Fresh User is able to Login and browse the app, verify Click on Subscribe CTA in Home Page & myspace ")
 @allure.title("RL-T1487")
-@pytest.mark.testcase4
 def test_case_RLT1487(driver_setup):
     driver, wait, _ = driver_setup
     fresh_phone, fresh_otp, fresh_hid = get_test_credentials("Phone_Fresh_User")
@@ -539,15 +575,13 @@ def test_case_RLT1487(driver_setup):
 
     with allure.step("Try to play any content"):
         _open_side_nav(driver)
-        # --- Tizen: use ArrowLeft instead of webOS "left" ---
         _press_key(driver, "ArrowLeft")
         time.sleep(5)
-        search_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@role='menuitem'][.//span[text()='Search']]")))
-        driver.execute_script("arguments[0].focus();", search_btn)
-        time.sleep(1)
+        # search_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@role='menuitem'][.//span[text()='Search']]")))
+        # driver.execute_script("arguments[0].focus();", search_btn)
+        # time.sleep(1)
+        _nav_click(driver,wait,"//div[@role='menuitem'][.//span[text()='Search']]","Search")
 
-
-        _press_key(driver, "Enter")
         _search(driver, "King and Conqueror")
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="King & Conqueror"]'))
@@ -577,12 +611,8 @@ def test_case_RLT356(driver_setup):
     _login(driver, wait, free_phone, otp)
     _profile_onboarding(driver, wait)
     time.sleep(5)
-    # --- Tizen: use ArrowLeft instead of webOS "left" ---
-    _press_key(driver, "ArrowLeft")
     _open_side_nav(driver)
-    wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Movies']"))
-    ).click()
+    _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
 
     time.sleep(5)
     movie_tray = wait.until(
@@ -644,7 +674,8 @@ def test_case_RLT356(driver_setup):
     print("Honeypot banner is displayed")
     time.sleep(1)
 
-    driver.find_element(AppiumBy.XPATH, '//button[.//*[text()="Subscribe"]]').click()
+    # _tizen_js_click(driver,'//button[.//*[text()="Subscribe"]]')
+    # driver.find_element(AppiumBy.XPATH, '//button[.//*[text()="Subscribe"]]').click()
     # --- Tizen: use Enter key instead of webOS "enter" ---
     _press_key(driver, "Enter")
 
@@ -670,8 +701,7 @@ def test_case_T375_4K_Seasons(driver_setup):
     _validate_side_nav(wait)
 
     # --- Tizen: use ArrowLeft instead of webOS "left" ---
-    _press_key(driver, "ArrowLeft")
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
     _search(driver, "Resort")
     wait.until(
         EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Resort']"))
@@ -756,8 +786,8 @@ def test_case_T375_4K_Seasons(driver_setup):
     # Switched to Kids Profile
     _open_side_nav(driver)
     time.sleep(5)
-    _press_key(driver, "ArrowLeft")
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
+    time.sleep(5)
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -802,16 +832,13 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     _login(driver, wait, phone_free, otp)
     _profile_onboarding(driver, wait)
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
-    # --- Tizen: use ArrowLeft instead of webOS "LEFT" ---
-    _press_key(driver, "ArrowLeft")
-    time.sleep(1)
-    _press_key(driver, "ArrowLeft")
-    wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Movies']"))
-    ).click()
-    time.sleep(5)
+    _open_side_nav(driver)
+    _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
 
-    for i in range(8):
+    time.sleep(5)
+    _press_key(driver, "ArrowDown")
+    time.sleep(2)
+    for i in range(10):
         count = 0
 
         languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
@@ -876,8 +903,8 @@ def test_case_T357_Kids_Restrictions(driver_setup):
 
     _switching_to_kids(driver, wait)
     _open_side_nav(driver)
-    _press_key(driver, "ArrowLeft")
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
+    time.sleep(3)
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -891,8 +918,6 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     driver.back()  # to PSP
     time.sleep(2)
     driver.back()  # to details Page
-    time.sleep(2)
-    driver.back()  # to Home Page
     _Switching_back_to_main_profile(driver, wait)
 
 
@@ -912,8 +937,9 @@ def test_case_T1488_watch_movie(driver_setup):
     _open_side_nav(driver)
     _validate_side_nav(wait)
     # --- Tizen: use ArrowLeft instead of webOS "left" ---
-    _press_key(driver, "ArrowLeft")
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='Search']"))).click()
+    # _press_key(driver, "ArrowLeft")
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
+    time.sleep(3)
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -972,4 +998,3 @@ def test_case_T1488_watch_movie(driver_setup):
         time.sleep(10)
         driver.back()  # Exit player
         driver.back()  # Exit Details page
-        driver.back()

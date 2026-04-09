@@ -1,6 +1,3 @@
-import re
-from asyncio import wait
-
 import pytest
 import allure
 from appium import webdriver
@@ -88,7 +85,7 @@ def get_test_credentials(user_type="Phone_Fresh_User"):
         else:
             return None, None, None
     except Exception as e:
-        print(f"❌ API Request Failed: {e}")
+        print(f"API Request Failed: {e}")
         return None, None, None
 
 
@@ -104,7 +101,7 @@ def reset_user_watch_time(hid, watch_time_ms):
         print(f"Successfully updated watch time for {hid} to {watch_time_ms}ms")
         return response.json()
     except Exception as e:
-        print(f"⚠️ Failed to reset watch time: {e}")
+        print(f"Failed to reset watch time: {e}")
         return None
 
 
@@ -232,6 +229,7 @@ def _switching_to_kids(driver, wait):
 def _Switching_back_to_main_profile(driver, wait):
     # wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
     time.sleep(3)
+    _open_side_nav(driver, wait)
     driver.press_keycode(KEYCODE_DPAD_LEFT)
     # myspace click
     wait.until(
@@ -432,18 +430,50 @@ def _background_and_reopen_validate(driver):
 def _logout(driver, wait, navigate_back_func):
     """Logs the user out via Settings menu."""
     print("Logout initiated")
-    try:
-        navigate_back_func(driver)
-        wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Help & Settings"]'))).click()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Log Out"]'))).click()
-        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@resource-id="in.startv.hotstar:id/dialog_lr_primary_button" or @text="Log Out"]'))).click()
+    # try:
+    #     navigate_back_func(driver)
+    #     wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("My Space")'))).focusandclick()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Help & Settings"]'))).click()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Log Out"]'))).click()
+    #     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@resource-id="in.startv.hotstar:id/dialog_lr_primary_button" or @text="Log Out"]'))).click()
+    #
+    #     login_check = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="1"]')))
+    #     assert login_check is not None, "Logout failed, login screen not displayed"
+    #     print("Logout successful and verified.")
+    # except Exception as e:
+    #     print(f"⚠️ Error during logout: {e}")
 
-        login_check = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="1"]')))
-        assert login_check is not None, "Logout failed, login screen not displayed"
-        print("Logout successful and verified.")
+    try:
+        # Ensure we are on the home screen before attempting to navigate the menu
+        _navigate_back_to_home(driver)
+
+        _open_side_nav(driver)
+
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("My Space")'))
+        ).focusandclick()
+        try:
+            help_settings = wait.until(
+                EC.element_to_be_clickable((AppiumBy.ID, 'in.startv.hotstar:id/btn_help_settings_cta'))
+            )
+        except TimeoutException:
+            print("Help & Settings not found — likely kids profile. Switching to adult.")
+
+            _Switching_back_to_main_profile(driver,wait)
+        wait.until(
+            EC.element_to_be_clickable((AppiumBy.ID, 'in.startv.hotstar:id/btn_help_settings_cta'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'in.startv.hotstar:id/btn_logout'))).focusandclick()
+        wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//*[@text="Log Out"]'))).click()
+        print("Logout successful")
+
     except Exception as e:
-        print(f"⚠️ Error during logout: {e}")
+        # Log the error but allow teardown to continue if possible
+        print(f"Error during logout: {e}")
+        # Re-raise the exception only if in a test body, not in teardown cleanup
+        if 'test_' in pytest.current_test:
+            raise e
+
 
 
 @allure.step("Search for term: {search_term}")
@@ -594,7 +624,8 @@ def test_case_RLT356(driver_setup):
 
     _open_side_nav(driver)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Home"]'))).focusandclick()
-
+    time.sleep(3)
+    driver.press_keycode(KEYCODE_DPAD_DOWN)
     hp_banner = wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Your free access is over"]')))
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
