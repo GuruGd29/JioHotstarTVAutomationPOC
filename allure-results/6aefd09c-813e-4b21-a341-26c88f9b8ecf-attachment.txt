@@ -1,0 +1,103 @@
+
+Setting up driver for test: test_case_T357_Kids_Restrictions...
+App launched successfully.
+Usertoken: 0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04
+User cookies: experimentsId=450698476; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYxNTYxMDQsImp0aSI6ImQwNDc4YzM2LWUyY2UtNGNmNS1iMjFlLTkwMjljMDhlZDBhMiIsImlhdCI6MTc3NjA2OTcwMiwibmJmIjoxNzc2MDY5NzAyLCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.UW2fGLKR7iIxkGZZXxS4zb37Wiv_EqQ_cPYKjNOjHlRrSxHOt3rlOYfWks5RGsQN6xOpKvy8sROqGDrZs1MVBg; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiIwZDBiM2QwOS1iMmY1LTQ1M2YtOGI4Yi1iMDFhNDhlNmVlMDQiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2MDY5NzA1fQ.TVsr6AJ3hgSYDH-jv-zWdtRZU0C-LUU6crcUHMXsJSU; xsrfToken=0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04; xsrfTokenSameSite=0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04; in_retool_canary_group=never
+Successfully updated watch time for 56c99a3dee0a4bd6bcfd81776d70828f to 74440000ms
+⚠️ Failed to reset watch time: Expecting value: line 1 column 1 (char 0)
+Login Initiated
+Continue button not found, proceeding...
+Login Pending not found, skipping logout...
+Profile selection started
+Parental lock is not available for this user. Proceeding...
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+trailer not available: assert False
+ +  where False = is_displayed()
+ +    where is_displayed = <appium.webdriver.webelement.WebElement (session="e635921b-dc38-48a1-a580-514216f1e5bb", element="12b51642-c612-4d67-ab41-437bf40ab997")>.is_displayed
+Total languages found: 7
+Selected language: MalayalamOriginal
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+Verification Successful: PSP page is available.
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+⚠️ Error during logout: Message: element click intercepted: Element <div class="relative flex items-center bg-transparent cursor-pointer _35fCsZK_6cXNTuquIBC20Z scPdWTkiq68EUJMa_X2Dt TEXT_COLOR_L0 _1iFYSDo9PYye_kato4jz8e _27d2BdRVDrlRBmh4_HEpg3" role="menuitem" tabindex="-1" aria-label="My Space">...</div> is not clickable at point (80, 994). Other element would receive the click: <div class="absolute inset-0 h-screen w-full overflow-hidden">...</div>
+  (Session info: content shell=); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+Backtrace:
+	Ordinal0 [0x00297C53+1473619]
+	Ordinal0 [0x0021AD71+961905]
+	Ordinal0 [0x001A42B3+475827]
+	Ordinal0 [0x0014989B+104603]
+	Ordinal0 [0x00148993+100755]
+	Ordinal0 [0x001478CD+96461]
+	Ordinal0 [0x00147136+94518]
+	Ordinal0 [0x001428E5+76005]
+	Ordinal0 [0x0015758D+161165]
+	Ordinal0 [0x00142626+75302]
+	Ordinal0 [0x001577A1+161697]
+	Ordinal0 [0x0015E7AB+190379]
+	Ordinal0 [0x0015742B+160811]
+	Ordinal0 [0x00140AE6+68326]
+	Ordinal0 [0x00141BF0+72688]
+	Ordinal0 [0x00141B89+72585]
+	Ordinal0 [0x00234B37+1067831]
+	GetHandleVerifier [0x00336845+506677]
+	GetHandleVerifier [0x003365E0+506064]
+	GetHandleVerifier [0x0033D188+533624]
+	GetHandleVerifier [0x0033701A+508682]
+	Ordinal0 [0x0022C226+1032742]
+	Ordinal0 [0x0022C09F+1032351]
+	Ordinal0 [0x00236A4B+1075787]
+	Ordinal0 [0x00236BB3+1076147]
+	Ordinal0 [0x00235B65+1071973]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Logout attempt 1 failed: module 'pytest' has no attribute 'current_test'
+Waiting before retry...
+Logout attempt 2...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+⚠️ Error during logout: Message: element click intercepted: Element <div class="relative flex items-center bg-transparent cursor-pointer _35fCsZK_6cXNTuquIBC20Z scPdWTkiq68EUJMa_X2Dt TEXT_COLOR_L0 _1iFYSDo9PYye_kato4jz8e _27d2BdRVDrlRBmh4_HEpg3" role="menuitem" tabindex="-1" aria-label="My Space">...</div> is not clickable at point (80, 994). Other element would receive the click: <div class="absolute inset-0 h-screen w-full overflow-hidden">...</div>
+  (Session info: content shell=); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+Backtrace:
+	Ordinal0 [0x00297C53+1473619]
+	Ordinal0 [0x0021AD71+961905]
+	Ordinal0 [0x001A42B3+475827]
+	Ordinal0 [0x0014989B+104603]
+	Ordinal0 [0x00148993+100755]
+	Ordinal0 [0x001478CD+96461]
+	Ordinal0 [0x00147136+94518]
+	Ordinal0 [0x001428E5+76005]
+	Ordinal0 [0x0015758D+161165]
+	Ordinal0 [0x00142626+75302]
+	Ordinal0 [0x001577A1+161697]
+	Ordinal0 [0x0015E7AB+190379]
+	Ordinal0 [0x0015742B+160811]
+	Ordinal0 [0x00140AE6+68326]
+	Ordinal0 [0x00141BF0+72688]
+	Ordinal0 [0x00141B89+72585]
+	Ordinal0 [0x00234B37+1067831]
+	GetHandleVerifier [0x00336845+506677]
+	GetHandleVerifier [0x003365E0+506064]
+	GetHandleVerifier [0x0033D188+533624]
+	GetHandleVerifier [0x0033701A+508682]
+	Ordinal0 [0x0022C226+1032742]
+	Ordinal0 [0x0022C09F+1032351]
+	Ordinal0 [0x00236A4B+1075787]
+	Ordinal0 [0x00236BB3+1076147]
+	Ordinal0 [0x00235B65+1071973]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Logout attempt 2 failed: module 'pytest' has no attribute 'current_test'
+Logout failed completely. App state might be unstable.
+
+Running teardown for test: test_case_T357_Kids_Restrictions...
+App closed.

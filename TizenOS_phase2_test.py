@@ -20,7 +20,7 @@ DEVICE_NAME = "SamsungTV"
 DEVICE_HOST = "172.23.12.114"
 # fiZNCxMH9Y.Hotstar,Di0N6xZMEA.disneyplushotstarIN
 APP_PACKAGE = "Di0N6xZMEA.disneyplushotstarIN"
-RC_TOKEN = "47480317"  # ← add your paired token
+RC_TOKEN = "94065092"  # ← add your paired token
 CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe"
 
 # Static Test Data
@@ -302,8 +302,13 @@ def _Switching_back_to_main_profile(driver, wait):
     _open_side_nav(driver)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
 
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='ADULT']/ancestor::div[@data-testid='action']"))).click()
-
+    # wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='ADULT']/ancestor::div[@data-testid='action']"))).click()
+    wait.until(
+        EC.element_to_be_clickable((
+            AppiumBy.XPATH,
+            "//p[text()='ADULT' or text()='Adult' or text()='Nava' or text()='Prof']/ancestor::div[@data-testid='action']"
+        ))
+    ).click()
     time.sleep(1)
     try:
         # 2. Enter PIN
@@ -612,14 +617,22 @@ def test_case_RLT356(driver_setup):
     _profile_onboarding(driver, wait)
     time.sleep(5)
     _open_side_nav(driver)
-    _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
-
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
     time.sleep(5)
-    movie_tray = wait.until(
-        EC.element_to_be_clickable(
-            (AppiumBy.XPATH, "(//div[@data-testid='hs-image']//img/ancestor::div[@role='button'])[1]"))
-    )
-    movie_tray.click()
+
+    _search(driver, "Thaai Kizhavi")
+    wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Thaai Kizhavi"]'))
+    ).click()
+
+    # _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
+    #
+    # time.sleep(5)
+    # movie_tray = wait.until(
+    #     EC.element_to_be_clickable(
+    #         (AppiumBy.XPATH, "(//div[@data-testid='hs-image']//img/ancestor::div[@role='button'])[1]"))
+    # )
+    # movie_tray.click()
     with allure.step("Start Playback"):
         watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,
                                                            '//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]')))
@@ -833,37 +846,46 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     _profile_onboarding(driver, wait)
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
     _open_side_nav(driver)
-    _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
-
+    _nav_click(driver, wait, "//div[@aria-label='Search']", "Search")
     time.sleep(5)
-    _press_key(driver, "ArrowDown")
-    time.sleep(2)
-    for i in range(10):
-        count = 0
+    _search(driver, "Sarvam Maya")
 
-        languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
+    time.sleep(3)
+    search_result = wait.until(
+        EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "Sarvam Maya")]')))
+    search_result.click()
 
-        if languages:
-            language_text = languages[0].text
-            print("Found text:", language_text)
-
-            match = re.search(r'\d+', language_text)
-            if match:
-                count = int(match.group())
-
-        print("Extracted count:", count)
-
-        if count >= 4:
-            print("Condition met. Pressing ENTER")
-            # --- Tizen: use Enter instead of webOS "ENTER" ---
-            _press_key(driver, "Enter")
-            break
-        else:
-            print("Condition not met. Moving RIGHT")
-            _press_key(driver, "ArrowRight")
-            time.sleep(2)
-
-    time.sleep(5)  # outside loop
+    # _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
+    #
+    # time.sleep(5)
+    # _press_key(driver, "ArrowDown")
+    # time.sleep(2)
+    # for i in range(10):
+    #     count = 0
+    #
+    #     languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
+    #
+    #     if languages:
+    #         language_text = languages[0].text
+    #         print("Found text:", language_text)
+    #
+    #         match = re.search(r'\d+', language_text)
+    #         if match:
+    #             count = int(match.group())
+    #
+    #     print("Extracted count:", count)
+    #
+    #     if count >= 4:
+    #         print("Condition met. Pressing ENTER")
+    #         # --- Tizen: use Enter instead of webOS "ENTER" ---
+    #         _press_key(driver, "Enter")
+    #         break
+    #     else:
+    #         print("Condition not met. Moving RIGHT")
+    #         _press_key(driver, "ArrowRight")
+    #         time.sleep(2)
+    #
+    # time.sleep(5)  # outside loop
 
     try:
         # 3. Verify Trailer Autoplay

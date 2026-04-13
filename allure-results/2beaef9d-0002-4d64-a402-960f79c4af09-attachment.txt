@@ -1,0 +1,28 @@
+
+Setting up driver for test: test_case_RLT1487...
+App launched successfully.
+Usertoken: 0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04
+User cookies: experimentsId=450698476; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYxNTYxMDQsImp0aSI6ImQwNDc4YzM2LWUyY2UtNGNmNS1iMjFlLTkwMjljMDhlZDBhMiIsImlhdCI6MTc3NjA2OTcwMiwibmJmIjoxNzc2MDY5NzAyLCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.UW2fGLKR7iIxkGZZXxS4zb37Wiv_EqQ_cPYKjNOjHlRrSxHOt3rlOYfWks5RGsQN6xOpKvy8sROqGDrZs1MVBg; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiIwZDBiM2QwOS1iMmY1LTQ1M2YtOGI4Yi1iMDFhNDhlNmVlMDQiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2MDY5NzA1fQ.TVsr6AJ3hgSYDH-jv-zWdtRZU0C-LUU6crcUHMXsJSU; xsrfToken=0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04; xsrfTokenSameSite=0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04; in_retool_canary_group=never
+Login Initiated
+Continue button not found, proceeding...
+Login Pending not found, skipping logout...
+My Space side-nav is available
+Home side-nav is available
+Search side-nav is available
+TV side-nav is available
+Movies side-nav is available
+Sports side-nav is available
+Categories side-nav is available
+Verification Successful: PSP page is available.
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+Verification Successful: PSP page is available.
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_RLT1487...
+App closed.

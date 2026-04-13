@@ -1,0 +1,132 @@
+
+Setting up driver for test: test_case_T375_4K_Seasons...
+App launched successfully.
+Usertoken: 0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04
+User cookies: experimentsId=450698476; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYxNTYxMDQsImp0aSI6ImQwNDc4YzM2LWUyY2UtNGNmNS1iMjFlLTkwMjljMDhlZDBhMiIsImlhdCI6MTc3NjA2OTcwMiwibmJmIjoxNzc2MDY5NzAyLCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.UW2fGLKR7iIxkGZZXxS4zb37Wiv_EqQ_cPYKjNOjHlRrSxHOt3rlOYfWks5RGsQN6xOpKvy8sROqGDrZs1MVBg; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiIwZDBiM2QwOS1iMmY1LTQ1M2YtOGI4Yi1iMDFhNDhlNmVlMDQiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2MDY5NzA1fQ.TVsr6AJ3hgSYDH-jv-zWdtRZU0C-LUU6crcUHMXsJSU; xsrfToken=0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04; xsrfTokenSameSite=0d0b3d09-b2f5-453f-8b8b-b01a48e6ee04; in_retool_canary_group=never
+Login Initiated
+Continue button not found, proceeding...
+Login Pending not found, skipping logout...
+Profile selection started
+PIN entry visible. Entering PIN: 1234
+My Space side-nav is available
+Home side-nav is available
+Search side-nav is available
+TV side-nav is available
+Movies side-nav is available
+Sports side-nav is available
+Categories side-nav is available
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+Recap is not available Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[contains(@title, "Skip Recap") or contains(@title, "Skip Intro")]"}
+  (Session info: content shell=); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+Backtrace:
+	Ordinal0 [0x00297C53+1473619]
+	Ordinal0 [0x0021AD71+961905]
+	Ordinal0 [0x001A42B3+475827]
+	Ordinal0 [0x001466C3+91843]
+	Ordinal0 [0x0015FB30+195376]
+	Ordinal0 [0x001575C0+161216]
+	Ordinal0 [0x0015E7AB+190379]
+	Ordinal0 [0x0015742B+160811]
+	Ordinal0 [0x00140AE6+68326]
+	Ordinal0 [0x00141BF0+72688]
+	Ordinal0 [0x00141B89+72585]
+	Ordinal0 [0x00234B37+1067831]
+	GetHandleVerifier [0x00336845+506677]
+	GetHandleVerifier [0x003365E0+506064]
+	GetHandleVerifier [0x0033D188+533624]
+	GetHandleVerifier [0x0033701A+508682]
+	Ordinal0 [0x0022C226+1032742]
+	Ordinal0 [0x0022C09F+1032351]
+	Ordinal0 [0x00236A4B+1075787]
+	Ordinal0 [0x00236BB3+1076147]
+	Ordinal0 [0x00235B65+1071973]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+T375 Quality change failed, seems a Non 4K device: Message: stale element reference: element is not attached to the page document
+  (Session info: content shell=); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#staleelementreferenceexception
+Stacktrace:
+Backtrace:
+	Ordinal0 [0x00297C53+1473619]
+	Ordinal0 [0x0021AD71+961905]
+	Ordinal0 [0x001A42B3+475827]
+	Ordinal0 [0x001A5E7A+482938]
+	Ordinal0 [0x001A5D69+482665]
+	Ordinal0 [0x001A5F20+483104]
+	Ordinal0 [0x00147349+95049]
+	Ordinal0 [0x00142862+75874]
+	Ordinal0 [0x0015758D+161165]
+	Ordinal0 [0x00142626+75302]
+	Ordinal0 [0x001577A1+161697]
+	Ordinal0 [0x0015E7AB+190379]
+	Ordinal0 [0x0015742B+160811]
+	Ordinal0 [0x00140AE6+68326]
+	Ordinal0 [0x00141BF0+72688]
+	Ordinal0 [0x00141B89+72585]
+	Ordinal0 [0x00234B37+1067831]
+	GetHandleVerifier [0x00336845+506677]
+	GetHandleVerifier [0x003365E0+506064]
+	GetHandleVerifier [0x0033D188+533624]
+	GetHandleVerifier [0x0033701A+508682]
+	Ordinal0 [0x0022C226+1032742]
+	Ordinal0 [0x0022C09F+1032351]
+	Ordinal0 [0x00236A4B+1075787]
+	Ordinal0 [0x00236BB3+1076147]
+	Ordinal0 [0x00235B65+1071973]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Detected Episode: S1 E1 Hell's Kitchen
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+⚠️ Error during logout: Message: element click intercepted: Element <span class="_1zc788KtPN0EmaoSx7RUA_ ON_BRAND BUTTON1_SEMIBOLD BUTTON1_SEMIBOLD _3PmSb8VsHYKlbGonX_HbVc duration-300 ease-in-out" title="..." aria-hidden="false" style="-webkit-line-clamp: 1;">Help &amp; Settings</span> is not clickable at point (1708, 136). Other element would receive the click: <div class="fixed top-0 right-0 bottom-0 left-0 _2PJS6614D1L_-YId7_DZPC _2L_xh-HdSjE0efoAOJrIll opacity-100 z-10 "></div>
+  (Session info: content shell=); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+Backtrace:
+	Ordinal0 [0x00297C53+1473619]
+	Ordinal0 [0x0021AD71+961905]
+	Ordinal0 [0x001A42B3+475827]
+	Ordinal0 [0x0014989B+104603]
+	Ordinal0 [0x00148993+100755]
+	Ordinal0 [0x001478CD+96461]
+	Ordinal0 [0x00147136+94518]
+	Ordinal0 [0x001428E5+76005]
+	Ordinal0 [0x0015758D+161165]
+	Ordinal0 [0x00142626+75302]
+	Ordinal0 [0x001577A1+161697]
+	Ordinal0 [0x0015E7AB+190379]
+	Ordinal0 [0x0015742B+160811]
+	Ordinal0 [0x00140AE6+68326]
+	Ordinal0 [0x00141BF0+72688]
+	Ordinal0 [0x00141B89+72585]
+	Ordinal0 [0x00234B37+1067831]
+	GetHandleVerifier [0x00336845+506677]
+	GetHandleVerifier [0x003365E0+506064]
+	GetHandleVerifier [0x0033D188+533624]
+	GetHandleVerifier [0x0033701A+508682]
+	Ordinal0 [0x0022C226+1032742]
+	Ordinal0 [0x0022C09F+1032351]
+	Ordinal0 [0x00236A4B+1075787]
+	Ordinal0 [0x00236BB3+1076147]
+	Ordinal0 [0x00235B65+1071973]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Logout attempt 1 failed: module 'pytest' has no attribute 'current_test'
+Waiting before retry...
+Logout attempt 2...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_T375_4K_Seasons...
+App closed.

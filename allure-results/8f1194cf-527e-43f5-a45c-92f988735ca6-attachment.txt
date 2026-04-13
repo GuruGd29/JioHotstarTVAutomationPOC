@@ -1,0 +1,3 @@
+
+Setting up driver for test: test_case_T1488_watch_movie...
+Error during driver initialization: HTTPConnectionPool(host='127.0.0.1', port=4723): Max retries exceeded with url: /session (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=4723): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
