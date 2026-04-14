@@ -16,7 +16,7 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "172.23.12.44"                    # Update with your device name (adb devices)
-PLATFORM_VERSION = "11"                     # Update with your Android version
+PLATFORM_VERSION = "10"                     # Update with your Android version
 APP_PACKAGE = "in.startv.hotstar"        # Hotstar Android package name
 APP_ACTIVITY = "com.hotstar.MainActivity"  # Update if different
 
@@ -571,8 +571,9 @@ def test_case_RLT1487(driver_setup):
         wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/textLabel"]'))).focusandclick()
         validate_psp_page_visible(wait)
         driver.press_keycode(KEYCODE_BACK)
+        time.sleep(1)
+        driver.press_keycode(KEYCODE_BACK)
         _open_side_nav(driver)
-        # _navigate_back_to_home(driver)
 
 
 @allure.story("[Free User] As a Free user, I see PSP upon playing non-free content and see PSP page after completing 4hrs of free timer")
@@ -585,7 +586,7 @@ def test_case_RLT356(driver_setup):
 
     reset_user_watch_time(hid, watch_time_ms=7134000)
     _login(driver, wait, free_phone, otp)
-    _profile_onboarding(driver, wait)
+    # _profile_onboarding(driver, wait)
 
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
     _open_side_nav(driver)
@@ -631,7 +632,15 @@ def test_case_RLT356(driver_setup):
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Home"]'))).focusandclick()
     time.sleep(3)
     driver.press_keycode(KEYCODE_DPAD_DOWN)
-    hp_banner = wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Your free access is over"]')))
+    # hp_banner = wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//*[@text="Your free access is over"]')))
+    hp_banner = wait.until(
+        EC.visibility_of_element_located((
+            AppiumBy.XPATH,
+            '//*[contains(@text, "Your free access is over") '
+            'or contains(@text, "Plans starting at") '
+            'or contains(@text, "Limited Time Offer")]'
+        ))
+    )
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
 
@@ -828,22 +837,32 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     _profile_onboarding(driver, wait)
 
     _open_side_nav(driver)
-    driver.find_element(AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Movies"]').focusandclick()
-    wait.until(EC.visibility_of_element_located((AppiumBy.ID, 'in.startv.hotstar:id/container_list')))
-    driver.press_keycode(KEYCODE_DPAD_DOWN)
 
-    for i in range(8):
-        count = 0
-        languages = driver.find_elements(AppiumBy.XPATH, '//android.widget.TextView[contains(@text, "Languages")]')
-        if len(languages) > 0:
-            language_text = languages[0].text
-            digit_as_str = language_text.split()[0]
-            count = int(digit_as_str)
-        if count >= 4:
-            driver.press_keycode(KEYCODE_DPAD_CENTER)
-            break
-        else:
-            driver.press_keycode(KEYCODE_DPAD_RIGHT)
+    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,
+                                           '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Search"]'))).focusandclick()
+    search_bar = wait.until(EC.element_to_be_clickable(
+        (AppiumBy.XPATH, '//android.widget.EditText[@resource-id="in.startv.hotstar:id/search_bar"]')))
+    search_bar.send_keys("Thaai Kizhavi")
+    wait.until(EC.element_to_be_clickable(
+        (AppiumBy.XPATH, '//android.widget.ImageView[@resource-id="in.startv.hotstar:id/hero_img"]'))).focusandclick()
+
+
+    # driver.find_element(AppiumBy.XPATH, '//android.widget.TextView[@resource-id="in.startv.hotstar:id/tv_title" and @text="Movies"]').focusandclick()
+    # wait.until(EC.visibility_of_element_located((AppiumBy.ID, 'in.startv.hotstar:id/container_list')))
+    # driver.press_keycode(KEYCODE_DPAD_DOWN)
+    #
+    # for i in range(8):
+    #     count = 0
+    #     languages = driver.find_elements(AppiumBy.XPATH, '//android.widget.TextView[contains(@text, "Languages")]')
+    #     if len(languages) > 0:
+    #         language_text = languages[0].text
+    #         digit_as_str = language_text.split()[0]
+    #         count = int(digit_as_str)
+    #     if count >= 4:
+    #         driver.press_keycode(KEYCODE_DPAD_CENTER)
+    #         break
+    #     else:
+    #         driver.press_keycode(KEYCODE_DPAD_RIGHT)
 
     try:
         trailer_element = '//android.widget.FrameLayout[@resource-id="in.startv.hotstar:id/media_content_container"]'  #element need to check

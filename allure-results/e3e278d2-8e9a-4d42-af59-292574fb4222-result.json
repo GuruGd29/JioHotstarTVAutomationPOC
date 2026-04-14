@@ -1,0 +1,1 @@
+{"name": "RL-T375", "status": "skipped", "description": "Validates 4K logos and season navigation.", "start": 1776171889888, "stop": 1776171889888, "uuid": "d9157ec4-2b45-4330-b4e3-446b3b288e1f", "testCaseId": "423acb2130cc7c986981882cbd069c5f", "fullName": "TizenOS_phase2_test#test_case_T375_4K_Seasons", "titlePath": ["TizenOS_phase2_test.py"]}

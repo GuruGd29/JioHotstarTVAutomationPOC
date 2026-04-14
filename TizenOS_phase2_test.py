@@ -20,7 +20,7 @@ DEVICE_NAME = "SamsungTV"
 DEVICE_HOST = "172.23.12.114"
 # fiZNCxMH9Y.Hotstar,Di0N6xZMEA.disneyplushotstarIN
 APP_PACKAGE = "Di0N6xZMEA.disneyplushotstarIN"
-RC_TOKEN = "94065092"  # ← add your paired token
+RC_TOKEN = "18250113"  # ← add your paired token
 CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe"
 
 # Static Test Data
@@ -605,7 +605,6 @@ def test_case_RLT1487(driver_setup):
 @allure.story(
     "[Free User]As a Free user, I go to Sports Sub menu and I see PSP upon playing non-free live content, I am allowed to play free live contents for 4hrs and i see PSP page after completing 4hrs of free timer")
 @allure.title("RL-T356")
-@pytest.mark.testcase1
 def test_case_RLT356(driver_setup):
     driver, wait, video_wait = driver_setup
     free_phone, otp, hid = get_test_credentials("Free_Timer_Eligible_users_two")
@@ -614,7 +613,7 @@ def test_case_RLT356(driver_setup):
     reset_user_watch_time(hid, watch_time_ms=7134000)
 
     _login(driver, wait, free_phone, otp)
-    _profile_onboarding(driver, wait)
+    # _profile_onboarding(driver, wait)
     time.sleep(5)
     _open_side_nav(driver)
     _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
@@ -664,8 +663,11 @@ def test_case_RLT356(driver_setup):
     print("Validation Successful: Timer is running.")
     time.sleep(50)
 
-    sub_now = video_wait.until(
-        EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Subscribe Now"]'))
+    sub_now = WebDriverWait(driver, 150).until(
+        EC.element_to_be_clickable((
+            AppiumBy.XPATH,
+            '//*[text()="Subscribe Now"]'
+        ))
     )
     assert sub_now is not None, "Subscribe now CTA is not available"
     print("Subscribe now CTA is available")
@@ -674,14 +676,18 @@ def test_case_RLT356(driver_setup):
     validate_psp_page_visible(wait)
 
     _navigate_back_to_home(driver)
+    _open_side_nav(driver)
+    _nav_click(driver,wait,"//div[@aria-label='Home']","Home")
 
-    time.sleep(2)
+    time.sleep(5)
 
     # --- Tizen: use ArrowDown instead of webOS "down" ---
+    _press_key(driver, "ArrowRight")
+    time.sleep(1)
     _press_key(driver, "ArrowDown")
 
     hp_banner = wait.until(
-        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(), "Your free access is over") or contains(text(), "Plans starting at")]'))
+        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(), "Your free access is over") or contains(text(), "Plans starting at") or contains(text(), "Limited Time Offer")]'))
     )
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
@@ -700,7 +706,6 @@ def test_case_RLT356(driver_setup):
 @allure.story(
     "[Premium User]As a Premium user, I am playing a series from TV Submenu and seeing Binge Controls, Watch Next/MLT trays and able to play Series more than 10mins without any interruption")
 @allure.title("RL-T375")
-@pytest.mark.testcase3
 def test_case_T375_4K_Seasons(driver_setup):
     """Validates 4K logos and season navigation."""
     driver, wait, video_wait = driver_setup
@@ -832,7 +837,6 @@ def test_case_T375_4K_Seasons(driver_setup):
 @allure.story(
     "[Free User] As a Free user, I see trailer auto-play based on LPV, check static paywall on KIDS profile after no free timer and check phonepe QR and scan scan the QR, Check amount is loaded correctly")
 @allure.title("RL-T357")
-@pytest.mark.testcase2
 def test_case_T357_Kids_Restrictions(driver_setup):
     """Validates restrictions and trailers in Kids profile."""
     driver, wait, _ = driver_setup
@@ -946,7 +950,6 @@ def test_case_T357_Kids_Restrictions(driver_setup):
 @allure.story(
     "[Premium User] Verify a Premium User is able to login, search a content & playbck. User is able to logout of the app")
 @allure.title("RL-T1488")
-@pytest.mark.testcase5
 def test_case_T1488_watch_movie(driver_setup):
     driver, wait, video_wait = driver_setup
 
