@@ -1,0 +1,9 @@
+
+Setting up driver for test: test_case_T357_Kids_Restrictions...
+Error during driver initialization: Message: An unknown server-side error occurred while processing the command. Original error: An unknown server-side error occurred while processing the command. Original error: unknown error: cannot connect to chrome at 172.23.14.91:9998
+from chrome not reachable
+Stacktrace:
+UnknownError: An unknown server-side error occurred while processing the command. Original error: An unknown server-side error occurred while processing the command. Original error: unknown error: cannot connect to chrome at 172.23.14.91:9998
+from chrome not reachable
+    at getResponseForW3CError (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\protocol\errors.js:1143:9)
+    at asyncHandler (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\protocol\protocol.js:487:57)

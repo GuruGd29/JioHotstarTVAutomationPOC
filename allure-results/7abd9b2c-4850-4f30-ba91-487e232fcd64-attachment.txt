@@ -1,0 +1,27 @@
+
+Setting up driver for test: test_case_RLT356...
+App launched successfully.
+Usertoken: c25fb34f-0188-4163-bb0c-0a851ce8ed71
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY0OTE5NzksImp0aSI6Ijk3NDUzYmEyLWYxYjUtNDBhYi1iNTgzLTg4YmQ4ZTZkMmY1ZCIsImlhdCI6MTc3NjQwNTU3NywibmJmIjoxNzc2NDA1NTc3LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.aapX_6l0X6Li3lj3E4XRIEz5b4UMQWM47MDL3kVQDgdjCOAfPicSI-_IQ-DqAcXb0OcklJ1kEWOa4Vx3uUEkHw; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiJjMjVmYjM0Zi0wMTg4LTQxNjMtYmIwYy0wYTg1MWNlOGVkNzEiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2NDA1NTgwfQ.UP0GfbQY2A4XQKp-_Qc8BAnKuv0qkoWz1zfnHVdpxfA; xsrfToken=c25fb34f-0188-4163-bb0c-0a851ce8ed71; xsrfTokenSameSite=c25fb34f-0188-4163-bb0c-0a851ce8ed71
+Successfully updated watch time for 4e39143ae3594318ab27813755cdddfe to 7134000ms
+⚠️ Failed to reset watch time: Expecting value: line 1 column 1 (char 0)
+Login Initiated
+Continue button not found, proceeding...
+Login Pending not found, skipping logout...
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+Playback started
+Timer is available
+Initial time: 00:50
+Time after 5s: 00:44
+Validation Successful: Timer is running.
+Subscribe now CTA is available
+Verification Failed: PSP page not found
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_RLT356...
+App closed.

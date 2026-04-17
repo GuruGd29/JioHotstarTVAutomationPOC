@@ -17,10 +17,10 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "SamsungTV"
-DEVICE_HOST = "172.23.12.114"
+DEVICE_HOST = "172.23.12.10"
 # fiZNCxMH9Y.Hotstar,Di0N6xZMEA.disneyplushotstarIN
 APP_PACKAGE = "Di0N6xZMEA.disneyplushotstarIN"
-RC_TOKEN = "18250113"  # ← add your paired token
+RC_TOKEN = "12902846"  # ← add your paired token
 CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe"
 
 # Static Test Data
@@ -687,7 +687,7 @@ def test_case_RLT356(driver_setup):
     _press_key(driver, "ArrowDown")
 
     hp_banner = wait.until(
-        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(), "Your free access is over") or contains(text(), "Plans starting at") or contains(text(), "Limited Time Offer")]'))
+        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(), "Your free access is over") or contains(text(), "Plans starting at") or contains(text(), "Limited Time Offer") or contains(text(), "Your exclusive offer ends")]'))
     )
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
@@ -990,9 +990,11 @@ def test_case_T1488_watch_movie(driver_setup):
             EC.visibility_of_element_located((AppiumBy.XPATH, '//div[@data-testid="skin-container"]'))
         )
         assert video_player is not None, "Video player not displayed"
+        print("Video player displayed")
 
     with allure.step("Modify Video Quality and Audio/Subtitles"):
         video_player.click()  # Open controls
+        _press_key(driver, "ArrowUp")
         video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//span[text()="Quality"]')))
 
         wait.until(
@@ -1001,6 +1003,7 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Full HD"]'))
         ).click()
+        _press_key(driver, "ArrowUp")
 
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))

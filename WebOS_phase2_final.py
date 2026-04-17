@@ -17,7 +17,7 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "LG2021"
-DEVICE_HOST = "172.23.14.89"  # Ensure this matches your TV's current IP
+DEVICE_HOST = "172.23.14.91"  # Ensure this matches your TV's current IP
 APP_ID = "hotstar"
 # CHROMEDRIVER_PATH = "/Users/dev.mm.con/chromedriver-2.36"
 
@@ -736,7 +736,8 @@ def test_case_RLT356(driver_setup):
             AppiumBy.XPATH,
             '//*[contains(text(), "Your free access is over") '
             'or contains(text(), "Plans starting at") '
-            'or contains(text(), "Limited Time Offer")]'
+            'or contains(text(), "Limited Time Offer") '
+            'or contains(text(), "Your exclusive offer ends")]'
         ))
     )
 
@@ -749,7 +750,7 @@ def test_case_RLT356(driver_setup):
             AppiumBy.XPATH,
             '//button[.//*[contains(text(), "Subscribe")]]'
         ))
-    ).click()
+    )
     driver.execute_script("webos: pressKey", {"key": "ENTER"})
 
     validate_psp_page_visible(wait)
@@ -1071,7 +1072,7 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Full HD"]'))
         ).click()
-        time.sleep(2)
+        time.sleep(8)
         video_player.click()
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
@@ -1079,7 +1080,8 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Tamil"]'))
         ).click()
-        # time.sleep(5)
+        time.sleep(8)
+        video_player.click()
         driver.execute_script("webos: pressKey", {"key": "UP"})
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
