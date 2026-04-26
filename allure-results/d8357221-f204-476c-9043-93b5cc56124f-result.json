@@ -1,1 +1,0 @@
-{"name": "RL-T375", "status": "skipped", "description": "Validates 4K logos and season navigation.", "start": 1776418665250, "stop": 1776418665250, "uuid": "abab4629-b94e-463f-8e3b-84fcee5c79d0", "testCaseId": "7e098dfa2fdd9573a74733f0efc44889", "fullName": "WebOS_phase2_final#test_case_T375_4K_Seasons", "titlePath": ["WebOS_phase2_final.py"]}

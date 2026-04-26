@@ -17,10 +17,10 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "SamsungTV"
-DEVICE_HOST = "172.23.12.10"
+DEVICE_HOST = "172.20.48.46"
 # fiZNCxMH9Y.Hotstar,Di0N6xZMEA.disneyplushotstarIN
 APP_PACKAGE = "Di0N6xZMEA.disneyplushotstarIN"
-RC_TOKEN = "12902846"  # ← add your paired token
+RC_TOKEN = "68371076"  # ← add your paired token
 CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe"
 
 # Static Test Data
@@ -196,46 +196,24 @@ TIZEN_KEYS = {
 
 
 def _press_key(driver, key):
-    """
-    Sends a remote control key press on Tizen TV.
-    Accepts friendly names (e.g. 'ArrowLeft') or raw KEY_ codes directly.
-    """
+
     tizen_key = TIZEN_KEYS.get(key, key)
     driver.execute_script("tizen: pressKey", {"key": tizen_key})
 
 
 def  _tizen_js_click(driver, element):
-    """
-    Fires a click event directly on a DOM element via JavaScript, bypassing
-    chromedriver's coordinate-based tap. Use this for any element that may
-    shift position during a page transition or animation on Tizen TV.
-    """
     driver.execute_script("arguments[0].click();", element)
 
 
 def _nav_click(driver, wait, xpath, label="nav item"):
-    """
-    Tizen-safe side-nav click. Always use this instead of bare .click()
-    when interacting with the side navigation bar.
-
-    Steps:
-      1. Sleep 2s  — lets CSS transition/slide animation fully settle so the
-                     nav bar is at its final resting position before we resolve
-                     the element's coordinates.
-      2. scrollIntoView — ensures the element is in the visible viewport.
-      3. Sleep 0.5s — tiny buffer after scroll before firing the event.
-      4. JS click  — dispatches the click event on the DOM node directly,
-                     sidestepping chromedriver's coordinate lookup entirely.
-    """
-    print(f"[_nav_click] Waiting for nav to settle before clicking: {label}")
-    time.sleep(2)  # wait for any page transition / animation to finish
-
+    print(f"Waiting for nav to settle before clicking: {label}")
+    time.sleep(2)
     element = wait.until(EC.presence_of_element_located((AppiumBy.XPATH, xpath)))
     driver.execute_script("arguments[0].scrollIntoView({block:'center'});", element)
-    time.sleep(0.5)  # small buffer after scrollIntoView before firing click
+    time.sleep(0.5)
 
     _tizen_js_click(driver, element)
-    print(f"[_nav_click] Clicked: {label}")
+    print(f"Clicked: {label}")
 
 
 # --- Reusable Utility Helpers ---
@@ -253,6 +231,7 @@ def _login(driver, wait, phone_number, otp):
     #     print("Continue button not found, proceeding...")
 
     # 2. Enter Phone Number
+    time.sleep(5)
     wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//div[@role='textbox']")))
     with allure.step("Entering phone number digits"):
         for digit in phone_number:
@@ -289,11 +268,12 @@ def _login(driver, wait, phone_number, otp):
 def _switching_to_kids(driver, wait):
     _open_side_nav(driver)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
-
     time.sleep(5)
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Kids']/ancestor::div[@data-testid='action']"))).click()
-
-    time.sleep(3)
+    kids_profile = wait.until(EC.element_to_be_clickable(
+        (By.XPATH, "//div[@data-testid='profile-item-focusable-container'][.//p[text()='Kids']]")))
+    kids_profile.click()
+    time.sleep(5)
+    print("Kids Profile Switched Successfully")
 
 
 @allure.step("Switching to main profile from kids profile")
@@ -322,8 +302,6 @@ def _Switching_back_to_main_profile(driver, wait):
 
 @allure.step("Verify Home page elements are scrollable vertically and horizontally (Tizen)")
 def _verify_home_scroll_tizen(driver, wait):
-    """Scroll down x2, up x2, right x2, left x2 on Home and verify content loads (Tizen)."""
-
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
 
     with allure.step("Scroll Down x2"):
@@ -429,9 +407,6 @@ def _validate_side_nav(wait):
 
 @allure.step("Navigate back to Home Screen gracefully")
 def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
-    """
-    Repeatedly calls driver.back() until the target home element is found.
-    """
     print(f"Attempting to navigate back to Home Screen (max {max_attempts} attempts)...")
 
     for attempt in range(max_attempts):
@@ -507,9 +482,6 @@ def _search(driver, search_term):
 
 @allure.step("Validate that the PSP page is displayed")
 def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
-    """
-    Common function to verify the user has reached the Subscription/PSP screen.
-    """
     try:
         psp_premium = wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Premium"]'))
@@ -859,38 +831,6 @@ def test_case_T357_Kids_Restrictions(driver_setup):
         EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "Sarvam Maya")]')))
     search_result.click()
 
-    # _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
-    #
-    # time.sleep(5)
-    # _press_key(driver, "ArrowDown")
-    # time.sleep(2)
-    # for i in range(10):
-    #     count = 0
-    #
-    #     languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
-    #
-    #     if languages:
-    #         language_text = languages[0].text
-    #         print("Found text:", language_text)
-    #
-    #         match = re.search(r'\d+', language_text)
-    #         if match:
-    #             count = int(match.group())
-    #
-    #     print("Extracted count:", count)
-    #
-    #     if count >= 4:
-    #         print("Condition met. Pressing ENTER")
-    #         # --- Tizen: use Enter instead of webOS "ENTER" ---
-    #         _press_key(driver, "Enter")
-    #         break
-    #     else:
-    #         print("Condition not met. Moving RIGHT")
-    #         _press_key(driver, "ArrowRight")
-    #         time.sleep(2)
-    #
-    # time.sleep(5)  # outside loop
-
     try:
         # 3. Verify Trailer Autoplay
         trailer_Element = "//div[@id='autoplay-container']//div//video"
@@ -991,6 +931,7 @@ def test_case_T1488_watch_movie(driver_setup):
         )
         assert video_player is not None, "Video player not displayed"
         print("Video player displayed")
+        time.sleep(10)
 
     with allure.step("Modify Video Quality and Audio/Subtitles"):
         video_player.click()  # Open controls
@@ -1003,6 +944,7 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Full HD"]'))
         ).click()
+        time.sleep(5)
         _press_key(driver, "ArrowUp")
 
         wait.until(
@@ -1011,7 +953,9 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Tamil"]'))
         ).click()
+        time.sleep(10)
         # --- Tizen: use ArrowUp instead of webOS "UP" ---
+        video_player.click()
         _press_key(driver, "ArrowUp")
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
@@ -1019,7 +963,7 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, "//span[contains(text(), 'English [CC]')]"))
         ).click()
-        video_player.click()  # Close controls
+        # video_player.click()  # Close controls
 
     with allure.step("Play for 10 seconds and Exit"):
         print("Playing with new settings for 10 seconds...")

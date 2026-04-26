@@ -17,7 +17,7 @@ import json
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
 DEVICE_NAME = "LG2021"
-DEVICE_HOST = "172.23.14.91"  # Ensure this matches your TV's current IP
+DEVICE_HOST = "172.20.48.44"  # Ensure this matches your TV's current IP
 APP_ID = "hotstar"
 # CHROMEDRIVER_PATH = "/Users/dev.mm.con/chromedriver-2.36"
 
@@ -180,28 +180,12 @@ def driver_setup(request):
 # --- Reusable Utility Helpers ---
 
 def _webos_js_click(driver, element):
-    """
-    Fires a click event directly on a DOM element via JavaScript, bypassing
-    chromedriver's coordinate-based tap. Useful for elements that shift
-    during transitions or animations on webOS.
-    """
+
     driver.execute_script("arguments[0].click();", element)
 
 
 def _nav_click(driver, wait, xpath, label="nav item"):
-    """
-    webOS-safe side-nav click. Same logic as Tizen version.
-
-    Steps:
-      1. Sleep 2s  — lets CSS transition/slide animation fully settle so the
-                     nav bar is at its final resting position before we resolve
-                     the element's coordinates.
-      2. scrollIntoView — ensures the element is in the visible viewport.
-      3. Sleep 0.5s — tiny buffer after scroll before firing the event.
-      4. JS click  — dispatches the click event on the DOM node directly,
-                     sidestepping chromedriver's coordinate lookup entirely.
-    """
-    print(f"[webos_nav_click] Waiting for nav to settle before clicking: {label}")
+    print(f"Waiting for nav to settle before clicking: {label}")
     time.sleep(2)  # wait for any page transition / animation to finish
 
     element = wait.until(EC.presence_of_element_located((AppiumBy.XPATH, xpath)))
@@ -209,7 +193,7 @@ def _nav_click(driver, wait, xpath, label="nav item"):
     time.sleep(0.5)  # small buffer after scrollIntoView before firing click
 
     _webos_js_click(driver, element)
-    print(f"[webos_nav_click] Clicked: {label}")
+    print(f"Clicked: {label}")
 
 
 @allure.step("Perform Login with Phone Number {phone_number}")
@@ -325,7 +309,6 @@ def _Switching_back_to_main_profile(driver, wait):
 
 @allure.step("Verify Home page elements are scrollable vertically and horizontally (webOS)")
 def _verify_home_scroll_webos(driver, wait):
-    """Scroll down x2, up x2, right x2, left x2 on Home and verify content loads (webOS)."""
 
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
 
@@ -459,9 +442,6 @@ def _validate_side_nav(wait):
 
 @allure.step("Navigate back to Home Screen gracefully")
 def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
-    """
-    Repeatedly calls driver.back() until the target home element is found.
-    """
     print(f"Attempting to navigate back to Home Screen (max {max_attempts} attempts)...")
 
     for attempt in range(max_attempts):
@@ -549,9 +529,7 @@ def _search(driver, search_term):
 
 @allure.step("Validate that the PSP page is displayed")
 def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
-    """
-    Common function to verify the user has reached the Subscription/PSP screen.
-    """
+
     try:
         psp_premium = wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Premium"]'))
@@ -1061,9 +1039,12 @@ def test_case_T1488_watch_movie(driver_setup):
             EC.visibility_of_element_located((AppiumBy.XPATH, '//div[@data-testid="skin-container"]'))
         )
         assert video_player is not None, "Video player not displayed"
+        print("Video player displayed")
+        time.sleep(10)
 
     with allure.step("Modify Video Quality and Audio/Subtitles"):
         video_player.click()  # Open controls
+        driver.execute_script("webos: pressKey", {"key": "up"})
         video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//span[text()="Quality"]')))
 
         wait.until(
@@ -1074,6 +1055,7 @@ def test_case_T1488_watch_movie(driver_setup):
         ).click()
         time.sleep(8)
         video_player.click()
+        driver.execute_script("webos: pressKey", {"key": "UP"})
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
         ).click()
@@ -1089,7 +1071,7 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, "//span[contains(text(), 'English [CC]')]"))
         ).click()
-        video_player.click()  # Close controls
+        # video_player.click()  # Close controls
 
     with allure.step("Play for 10 seconds and Exit"):
         print("Playing with new settings for 10 seconds...")

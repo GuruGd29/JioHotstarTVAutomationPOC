@@ -1,7 +1,0 @@
-
-Setting up driver for test: test_case_T375_4K_Seasons...
-Error during driver initialization: Message: An unknown server-side error occurred while processing the command. Original error: read ECONNRESET
-Stacktrace:
-UnknownError: An unknown server-side error occurred while processing the command. Original error: read ECONNRESET
-    at getResponseForW3CError (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\protocol\errors.js:1143:9)
-    at asyncHandler (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\protocol\protocol.js:487:57)

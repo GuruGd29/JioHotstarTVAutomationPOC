@@ -1,0 +1,58 @@
+
+Setting up driver for test: test_case_T1488_watch_movie...
+App launched successfully.
+Usertoken: 849a7847-c698-46ec-b9a2-9dba1457cc80
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY5MjUzMTYsImp0aSI6ImM2NDJjYTc4LTk5MDQtNDQ4ZC04NTYxLTA0ZDdhMjVmNGQ1OCIsImlhdCI6MTc3NjgzODkxNCwibmJmIjoxNzc2ODM4OTE0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.SUKPbzGrrTjydgSUB4a9IEW90tW_Hy4abgT5PSi_0kmZZ_PjSDTGoPjJtUjy8oReKeZH8km7GVEI17UNG9KReA; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI4NDlhNzg0Ny1jNjk4LTQ2ZWMtYjlhMi05ZGJhMTQ1N2NjODAiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2ODM4OTE2fQ.sazhysenyHY3kqXqXvG-WBwIekcUXQYjKTIZxrjRk0w; xsrfToken=849a7847-c698-46ec-b9a2-9dba1457cc80; xsrfTokenSameSite=849a7847-c698-46ec-b9a2-9dba1457cc80
+Login Initiated
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+⚠️ Error during logout: Message: Could not proxy command to the remote server. Original error: timeout of 240000ms exceeded
+Stacktrace:
+ProxyRequestError: Could not proxy command to the remote server. Original error: timeout of 240000ms exceeded
+    at JWProxy.proxy (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-tizen-tv-driver\node_modules\@appium\base-driver\lib\jsonwp-proxy\proxy.js:275:13)
+    at runMicrotasks (<anonymous>)
+    at runNextTicks (node:internal/process/task_queues:61:5)
+    at listOnTimeout (node:internal/timers:528:9)
+    at processTimers (node:internal/timers:502:7)
+    at ProtocolConverter.convertAndProxy (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-tizen-tv-driver\node_modules\@appium\base-driver\lib\jsonwp-proxy\protocol-converter.js:310:12)
+    at JWProxy.proxyCommand (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-tizen-tv-driver\node_modules\@appium\base-driver\lib\jsonwp-proxy\proxy.js:340:12)
+    at JWProxy.proxyReqRes (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-tizen-tv-driver\node_modules\@appium\base-driver\lib\jsonwp-proxy\proxy.js:426:32)
+    at Chromedriver.proxyReq (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-tizen-tv-driver\node_modules\appium-chromedriver\lib\chromedriver.js:831:12)
+Logout attempt 1 failed: module 'pytest' has no attribute 'current_test'
+Waiting before retry...
+Logout attempt 2...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+⚠️ Error during logout: Message: An unknown server-side error occurred while processing the command. Original error: disconnected: unable to connect to renderer
+  (failed to check if window was closed: disconnected: unable to connect to renderer)
+  (Session info: chrome=108.0.5359.1)
+Stacktrace:
+Backtrace:
+	(No symbol) [0x00C5F243]
+	(No symbol) [0x00BE7FD1]
+	(No symbol) [0x00ADD04D]
+	(No symbol) [0x00ACD3F8]
+	(No symbol) [0x00ACD1F8]
+	(No symbol) [0x00ADE5C3]
+	(No symbol) [0x00B3C1D8]
+	(No symbol) [0x00B28386]
+	(No symbol) [0x00B0163C]
+	(No symbol) [0x00B0269D]
+	GetHandleVerifier [0x00EF9A22+2655074]
+	GetHandleVerifier [0x00EECA24+2601828]
+	GetHandleVerifier [0x00D08C0A+619850]
+	GetHandleVerifier [0x00D07830+614768]
+	(No symbol) [0x00BF05FC]
+	(No symbol) [0x00BF5968]
+	(No symbol) [0x00BF5A55]
+	(No symbol) [0x00C0051B]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Logout attempt 2 failed: module 'pytest' has no attribute 'current_test'
+Logout failed completely. App state might be unstable.
+
+Running teardown for test: test_case_T1488_watch_movie...
+App closed.

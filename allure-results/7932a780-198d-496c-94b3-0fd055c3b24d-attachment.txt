@@ -1,0 +1,7 @@
+
+Setting up driver for test: test_case_RLT356...
+Error during driver initialization: Message: An unknown server-side error occurred while processing the command. Original error: Command 'C:\\tizen-studio\\tools\\sdb.exe capability' exited with code 1. Stdout was: ''. Stderr was: 'error: target not found '
+Stacktrace:
+UnknownError: An unknown server-side error occurred while processing the command. Original error: Command 'C:\\tizen-studio\\tools\\sdb.exe capability' exited with code 1. Stdout was: ''. Stderr was: 'error: target not found '
+    at getResponseForW3CError (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\protocol\errors.js:1143:9)
+    at asyncHandler (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\protocol\protocol.js:487:57)

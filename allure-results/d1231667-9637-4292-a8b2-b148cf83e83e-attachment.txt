@@ -1,0 +1,103 @@
+
+Setting up driver for test: test_case_T375_4K_Seasons...
+App launched successfully.
+Usertoken: 849a7847-c698-46ec-b9a2-9dba1457cc80
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY5MjUzMTYsImp0aSI6ImM2NDJjYTc4LTk5MDQtNDQ4ZC04NTYxLTA0ZDdhMjVmNGQ1OCIsImlhdCI6MTc3NjgzODkxNCwibmJmIjoxNzc2ODM4OTE0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.SUKPbzGrrTjydgSUB4a9IEW90tW_Hy4abgT5PSi_0kmZZ_PjSDTGoPjJtUjy8oReKeZH8km7GVEI17UNG9KReA; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI4NDlhNzg0Ny1jNjk4LTQ2ZWMtYjlhMi05ZGJhMTQ1N2NjODAiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2ODM4OTE2fQ.sazhysenyHY3kqXqXvG-WBwIekcUXQYjKTIZxrjRk0w; xsrfToken=849a7847-c698-46ec-b9a2-9dba1457cc80; xsrfTokenSameSite=849a7847-c698-46ec-b9a2-9dba1457cc80
+8327991323
+7762
+Login Initiated
+Logout button not present, skipping this step...
+Profile selection started
+PIN entry visible. Entering PIN: 1234
+Entered digit: 1
+Entered digit: 2
+Entered digit: 3
+Entered digit: 4
+My Space side-nav is available
+Home side-nav is available
+Search side-nav is available
+TV side-nav is available
+Movies side-nav is available
+Sports side-nav is available
+Categories side-nav is available
+Skip Recap/Intro not available: Message: An element could not be located on the page using the given search parameters.; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+NoSuchElementError: An element could not be located on the page using the given search parameters.
+    at AndroidUiautomator2Driver.findElOrEls (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-uiautomator2-driver\node_modules\appium-android-driver\lib\commands\find.ts:86:11)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at AndroidUiautomator2Driver.findElOrElsWithProcessing (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\basedriver\commands\find.ts:60:12)
+    at AndroidUiautomator2Driver.findElement (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\basedriver\commands\find.ts:75:12)
+Asli 4K logo confirmed visible
+Asli 4K logo correctly absent after switching to Full HD
+Current episode: S1 E1 Hell's Kitchen
+Next Episode not available — likely last episode: Message: androidx.test.uiautomator.StaleObjectException; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#staleelementreferenceexception
+Stacktrace:
+io.appium.uiautomator2.common.exceptions.StaleElementReferenceException: androidx.test.uiautomator.StaleObjectException
+	at io.appium.uiautomator2.handler.request.SafeRequestHandler.handle(SafeRequestHandler.java:63)
+	at io.appium.uiautomator2.server.AppiumServlet.handleRequest(AppiumServlet.java:259)
+	at io.appium.uiautomator2.server.AppiumServlet.handleHttpRequest(AppiumServlet.java:253)
+	at io.appium.uiautomator2.http.ServerHandler.channelRead(ServerHandler.java:77)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:366)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:352)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:345)
+	at io.netty.handler.codec.MessageToMessageDecoder.channelRead(MessageToMessageDecoder.java:102)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:366)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:352)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:345)
+	at io.netty.channel.CombinedChannelDuplexHandler$DelegatingChannelHandlerContext.fireChannelRead(CombinedChannelDuplexHandler.java:435)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:293)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:267)
+	at io.netty.channel.CombinedChannelDuplexHandler.channelRead(CombinedChannelDuplexHandler.java:250)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:366)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:352)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:345)
+	at io.netty.handler.timeout.IdleStateHandler.channelRead(IdleStateHandler.java:266)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:366)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:352)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:345)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1294)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:366)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:352)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:911)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:131)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:611)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:552)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:466)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:438)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:140)
+	at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run(DefaultThreadFactory.java:144)
+	at java.lang.Thread.run(Thread.java:923)
+Caused by: androidx.test.uiautomator.StaleObjectException
+	at androidx.test.uiautomator.UiObject2.getAccessibilityNodeInfo(UiObject2.java:1018)
+	at androidx.test.uiautomator.UiObject2.hashCode(UiObject2.java:139)
+	at java.lang.Object.toString(Object.java:291)
+	at java.util.Formatter$FormatSpecifier.printString(Formatter.java:2978)
+	at java.util.Formatter$FormatSpecifier.print(Formatter.java:2855)
+	at java.util.Formatter.format(Formatter.java:2524)
+	at java.util.Formatter.format(Formatter.java:2459)
+	at java.lang.String.format(String.java:2870)
+	at io.appium.uiautomator2.utils.ReflectionUtils.invoke(ReflectionUtils.java:85)
+	at io.appium.uiautomator2.core.AxNodeInfoExtractor.extractAxNodeInfo(AxNodeInfoExtractor.java:58)
+	at io.appium.uiautomator2.core.AxNodeInfoExtractor.toAxNodeInfo(AxNodeInfoExtractor.java:48)
+	at io.appium.uiautomator2.utils.ElementHelpers.getText(ElementHelpers.java:128)
+	at io.appium.uiautomator2.utils.ElementHelpers.getText(ElementHelpers.java:110)
+	at io.appium.uiautomator2.model.BaseElement.getText(BaseElement.java:151)
+	at io.appium.uiautomator2.handler.GetText.safeHandle(GetText.java:21)
+	at io.appium.uiautomator2.handler.request.SafeRequestHandler.handle(SafeRequestHandler.java:59)
+	... 33 more
+
+Asli 4K confirmed in Kids profile
+Clicked ADULT profile.
+PIN entry visible. Entering PIN: 1234
+Entered digit: 1
+Entered digit: 2
+Entered digit: 3
+Entered digit: 4
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Successfully reached Home Screen on attempt 1.
+Logout successful
+
+Running teardown for test: test_case_T375_4K_Seasons...
+App closed.

@@ -1,0 +1,27 @@
+
+Setting up driver for test: test_case_T1488_watch_movie...
+App launched successfully.
+Usertoken: 849a7847-c698-46ec-b9a2-9dba1457cc80
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY5MjUzMTYsImp0aSI6ImM2NDJjYTc4LTk5MDQtNDQ4ZC04NTYxLTA0ZDdhMjVmNGQ1OCIsImlhdCI6MTc3NjgzODkxNCwibmJmIjoxNzc2ODM4OTE0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.SUKPbzGrrTjydgSUB4a9IEW90tW_Hy4abgT5PSi_0kmZZ_PjSDTGoPjJtUjy8oReKeZH8km7GVEI17UNG9KReA; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI4NDlhNzg0Ny1jNjk4LTQ2ZWMtYjlhMi05ZGJhMTQ1N2NjODAiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2ODM4OTE2fQ.sazhysenyHY3kqXqXvG-WBwIekcUXQYjKTIZxrjRk0w; xsrfToken=849a7847-c698-46ec-b9a2-9dba1457cc80; xsrfTokenSameSite=849a7847-c698-46ec-b9a2-9dba1457cc80
+Login Initiated
+Login Pending not found, skipping logout...
+Profile selection started
+PIN entry visible. Entering PIN: 1234
+My Space side-nav is available
+Home side-nav is available
+Search side-nav is available
+TV side-nav is available
+Movies side-nav is available
+Sports side-nav is available
+Categories side-nav is available
+[_nav_click] Waiting for nav to settle before clicking: Search
+[_nav_click] Clicked: Search
+Video player displayed
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_T1488_watch_movie...
+App closed.
