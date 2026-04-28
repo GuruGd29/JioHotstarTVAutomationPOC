@@ -16,10 +16,12 @@ import json
 
 # --- Configuration (Constants) ---
 APPIUM_SERVER_URL = "http://127.0.0.1:4723"
-DEVICE_NAME = "LG2021"
-DEVICE_HOST = "172.20.48.44"  # Ensure this matches your TV's current IP
-APP_ID = "hotstar"
-# CHROMEDRIVER_PATH = "/Users/dev.mm.con/chromedriver-2.36"
+DEVICE_NAME = "SamsungTV"
+DEVICE_HOST = "172.20.48.46"
+# fiZNCxMH9Y.Hotstar,Di0N6xZMEA.disneyplushotstarIN
+APP_PACKAGE = "Di0N6xZMEA.disneyplushotstarIN"
+RC_TOKEN = "68371076"  # ← add your paired token
+CHROMEDRIVER_DIR = "C:\\chromedriver\\chromedriver_2.29\\chromedriver.exe"
 
 # Static Test Data
 User_Cookie = None
@@ -81,7 +83,7 @@ def get_test_credentials(user_type="Phone_Fresh_User"):
         else:
             return None, None
     except Exception as e:
-        print(f"❌ API Request Failed: {e}")
+        print(f"API Request Failed: {e}")
         return None, None
 
 
@@ -104,29 +106,31 @@ def reset_user_watch_time(hid, watch_time_ms):
         print(f"Successfully updated watch time for {hid} to {watch_time_ms}ms")
         return response.json()
     except Exception as e:
-        print(f"⚠️ Failed to reset watch time: {e}")
+        print(f"Failed to reset watch time: {e}")
         return None
 
 
 # --- Pytest Fixtures ---
 
 @pytest.fixture(scope="function")
-@allure.title("Initialize Appium Driver for webOS")
+@allure.title("Initialize Appium Driver for Tizen")
 def driver_setup(request):
     """Initializes and yields Appium driver with extended timeouts."""
     print(f"\nSetting up driver for test: {request.node.name}...")
     appium_options = AppiumOptions()
-    appium_options.platform_name = "LGTV"
-    appium_options.automation_name = "webOS"
-    appium_options.set_capability("appium:deviceName", DEVICE_NAME)
-    appium_options.set_capability("appium:deviceHost", DEVICE_HOST)
-    appium_options.set_capability("appium:appId", APP_ID)
-    appium_options.set_capability("appium:noReset", True)
-    appium_options.set_capability("appium:rcMode", "rc")
-    # appium_options.set_capability("appium:webosSdkHome", r"C:\LG_webOS_TV_SDK")
-    appium_options.set_capability("appium:chromedriverExecutable", "C:\\chromedriver\\chromedriver.exe")
-    appium_options.set_capability("appium:newCommandTimeout", 300)  # Prevents Session Death during sleeps
-    # appium_options.set_capability("appium:autoExtendDevMode", False)
+    # --- Tizen-specific capabilities ---
+    appium_options.platform_name = "TizenTV"
+    appium_options.automation_name = "TizenTV"
+    appium_options.set_capability("appium:deviceName", f"{DEVICE_HOST}:26101")
+    appium_options.set_capability("appium:appPackage", APP_PACKAGE)
+    appium_options.set_capability("appium:noReset", False)
+    appium_options.set_capability("appium:rcMode", "remote")
+    appium_options.set_capability("appium:rcToken", RC_TOKEN)
+    # appium_options.set_capability("appium:rcOnly", True)
+    appium_options.set_capability("appium:chromedriverExecutable", CHROMEDRIVER_DIR)
+    appium_options.set_capability("appium:newCommandTimeout", 300)
+    appium_options.set_capability("appium:rcKeypressCooldown", 1000)
+    appium_options.set_capability("appium:sendKeysStrategy", "rc")
 
     driver = None
     try:
@@ -177,38 +181,57 @@ def driver_setup(request):
         time.sleep(10)
 
 
-# --- Reusable Utility Helpers ---
+# --- Tizen Key Press Helper ---
 
-def _webos_js_click(driver, element):
+TIZEN_KEYS = {
+    "ArrowLeft":  "KEY_LEFT",
+    "ArrowRight": "KEY_RIGHT",
+    "ArrowUp":    "KEY_UP",
+    "ArrowDown":  "KEY_DOWN",
+    "Enter":      "KEY_ENTER",
+    "Home":       "KEY_HOME",
+    "Back":       "KEY_BACK",
+    "Return":     "KEY_RETURN",
+}
 
+
+def _press_key(driver, key):
+
+    tizen_key = TIZEN_KEYS.get(key, key)
+    driver.execute_script("tizen: pressKey", {"key": tizen_key})
+
+
+def  _tizen_js_click(driver, element):
     driver.execute_script("arguments[0].click();", element)
 
 
 def _nav_click(driver, wait, xpath, label="nav item"):
     print(f"Waiting for nav to settle before clicking: {label}")
-    time.sleep(2)  # wait for any page transition / animation to finish
-
+    time.sleep(2)
     element = wait.until(EC.presence_of_element_located((AppiumBy.XPATH, xpath)))
     driver.execute_script("arguments[0].scrollIntoView({block:'center'});", element)
-    time.sleep(0.5)  # small buffer after scrollIntoView before firing click
+    time.sleep(0.5)
 
-    _webos_js_click(driver, element)
+    _tizen_js_click(driver, element)
     print(f"Clicked: {label}")
 
+
+# --- Reusable Utility Helpers ---
 
 @allure.step("Perform Login with Phone Number {phone_number}")
 def _login(driver, wait, phone_number, otp):
     print("Login Initiated")
     time.sleep(3)
 
-    # 1. Handle 'Continue' or 'Log In' prompt
-    try:
-        continue_btn = driver.find_element(AppiumBy.XPATH, '//*[text()="Continue"]')
-        continue_btn.click()
-    except NoSuchElementException:
-        print("Continue button not found, proceeding...")
+    # # 1. Handle 'Continue' or 'Log In' prompt
+    # try:
+    #     continue_btn = driver.find_element(AppiumBy.XPATH, '//*[text()="Continue"]')
+    #     continue_btn.click()
+    # except NoSuchElementException:
+    #     print("Continue button not found, proceeding...")
 
     # 2. Enter Phone Number
+    time.sleep(5)
     wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//div[@role='textbox']")))
     with allure.step("Entering phone number digits"):
         for digit in phone_number:
@@ -223,7 +246,6 @@ def _login(driver, wait, phone_number, otp):
         for digit in otp:
             wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, "//div[@data-testid='otp-login-lr']")))
             driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
-
 
     login_pending_elements = driver.find_elements(
         AppiumBy.XPATH, '//*[contains(text(),"Login Pending")]'
@@ -242,33 +264,16 @@ def _login(driver, wait, phone_number, otp):
         print("Login Pending not found, skipping logout...")
 
 
-
 @allure.step("switching to kids profile")
 def _switching_to_kids(driver, wait):
-    # wait.until(EC.element_to_be_clickable(HOME_LOCATOR)).click()
     _open_side_nav(driver)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))).click()
-
     time.sleep(5)
-    wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Kids']/ancestor::div[@data-testid='action']"))).click()
-    # driver.execute_script("webos: pressKey", {"key": "ENTER"})
-
-    # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
-    #
-    # if profiles:
-    #     profiles[0].click()
-
-    # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
-    # step_count = len(profiles)
-    # for x in range(1, step_count):
-    #     driver.execute_script("webos: pressKey", {"key": "LEFT"})
-    #     time.sleep(1)
-    #
-    # time.sleep(5)
-    # driver.execute_script("webos: pressKey", {"key": "ENTER"})
-    # driver.execute_script("webos: pressKey", {"key": "ENTER"})
-    # switching to kids
-    time.sleep(3)
+    kids_profile = wait.until(EC.element_to_be_clickable(
+        (By.XPATH, "//div[@data-testid='profile-item-focusable-container'][.//p[text()='Kids']]")))
+    kids_profile.click()
+    time.sleep(5)
+    print("Kids Profile Switched Successfully")
 
 
 @allure.step("Switching to main profile from kids profile")
@@ -284,17 +289,6 @@ def _Switching_back_to_main_profile(driver, wait):
             "//p[text()='ADULT' or text()='Adult' or text()='Nava' or text()='Prof']/ancestor::div[@data-testid='action']"
         ))
     ).click()
-    # time.sleep(3)
-    # profiles = driver.find_elements(AppiumBy.XPATH, "//*[@class='_29_lsSDSbC8ghg3WojTDfZ _1nSi2JQsirqcJgMi2iWYyd']")
-    # if profiles:
-    #     profiles[0].click()
-
-    # assert len(profiles) > 0, "No elements found to hover over!"
-    # for Y in range(1, len(profiles)):
-    #     driver.execute_script("webos: pressKey", {"key": "left"})
-    #     time.sleep(1)
-    #     # 4. Press ENTER and wait
-    # driver.execute_script("webos: pressKey", {"key": "enter"})
     time.sleep(1)
     try:
         # 2. Enter PIN
@@ -304,35 +298,34 @@ def _Switching_back_to_main_profile(driver, wait):
             time.sleep(2)
     except Exception as e:
         print(f"Error occurred while entering PIN: {e}")
-        # Append logout code
 
 
-@allure.step("Verify Home page elements are scrollable vertically and horizontally (webOS)")
-def _verify_home_scroll_webos(driver, wait):
-
+@allure.step("Verify Home page elements are scrollable vertically and horizontally (Tizen)")
+def _verify_home_scroll_tizen(driver, wait):
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
 
     with allure.step("Scroll Down x2"):
         for i in range(2):
-            driver.execute_script("webos: pressKey", {"key": "DOWN"})
+            _press_key(driver, "ArrowDown")
             time.sleep(1)
 
     with allure.step("Scroll Up x2"):
         for i in range(2):
-            driver.execute_script("webos: pressKey", {"key": "UP"})
+            _press_key(driver, "ArrowUp")
             time.sleep(1)
 
     with allure.step("Scroll Right x2"):
         for i in range(2):
-            driver.execute_script("webos: pressKey", {"key": "RIGHT"})
+            _press_key(driver, "ArrowRight")
             time.sleep(1)
 
     with allure.step("Scroll Left x2"):
         for i in range(2):
-            driver.execute_script("webos: pressKey", {"key": "LEFT"})
+            _press_key(driver, "ArrowLeft")
             time.sleep(1)
 
-    print("Home page scroll verification complete (webOS).")
+    print("Home page scroll verification complete (Tizen).")
+
 
 @allure.step("Select Profile and Enter PIN")
 def _profile_onboarding(driver, wait):
@@ -346,22 +339,18 @@ def _profile_onboarding(driver, wait):
         profile_img.click()
 
         # 2. Enter PIN
-        # We search for the element; if it's not there within 5 seconds, we skip the PIN block
         pin_button_1 = wait.until(
             EC.visibility_of_element_located((AppiumBy.XPATH, '//span[text()="1"]'))
         )
 
-        # If the element is found, pin_button_1 will not be None
         if pin_button_1:
             pin_string = "1234"
             print(f"PIN entry visible. Entering PIN: {pin_string}")
             with allure.step("Entering profile PIN"):
                 for digit in pin_string:
-                    # It's safer to use wait here too in case the numpad is slow to react
                     driver.find_element(AppiumBy.XPATH, f'//span[text()="{digit}"]').click()
 
     except Exception:
-        # If the element "//span[text()='1']" is not found, it throws a TimeoutException
         print("Parental lock is not available for this user. Proceeding...")
 
 
@@ -369,54 +358,30 @@ def _profile_onboarding(driver, wait):
 def _open_side_nav(driver, max_attempts=10):
     home_xpath = "//div[@aria-label='Home']"
     time.sleep(3)
+    # driver.execute_script("tizen: pressKey", {"key": "KEY_ENTER"})
+    time.sleep(2)
     for _ in range(max_attempts):
         elements = driver.find_elements("xpath", home_xpath)
         if elements:
             return elements[0]
 
-        # Press LEFT key using webOS remote
-        driver.execute_script("webos: pressKey", {"key": "left"})
+        _press_key(driver, "ArrowLeft")
         time.sleep(1)
 
     raise Exception("Home side-nav not visible after navigating left")
 
-# @allure.step("Navigate back until Home is visible")
-# def _navigate_back_to_home(driver, max_attempts=10, wait_time=1):
-#     home_xpath = "//div[@aria-label='Home']"
-#
-#     for attempt in range(max_attempts):
-#         elements = driver.find_elements("xpath", home_xpath)
-#
-#         if elements:
-#             print(f"Home found after {attempt} back actions")
-#             return elements[0]
-#
-#         print(f"Attempt {attempt + 1}: Home not found, pressing BACK")
-#         driver.back()
-#         time.sleep(wait_time)
-#
-#     raise Exception("Failed to navigate back to Home after max attempts")
 
 @allure.step("Send app to background using HOME and relaunch the app")
 def _background_and_reopen_validate(driver):
 
     wait = WebDriverWait(driver, 20)
 
-    # Press HOME to background the app
-    driver.execute_script("webos: pressKey", {"key": "HOME"})
+    # --- Tizen: Press HOME key to background the app ---
+    _press_key(driver, "Home")
     time.sleep(3)
 
-    # Optional: wait until app is no longer in foreground
-    # (depends on your driver support for current app info)
-
-    # Relaunch the app
-    driver.execute_script("webos: launch", {"id": APP_ID})
-    # driver.execute_script("webos: launchApp", {
-    #     "id": APP_ID
-    # })
-
-    # Wait for app to be visible again (use your home locator)
-    # wait.until(lambda d: d.find_element(*HOME_LOCATOR).is_displayed())
+    # --- Tizen: Relaunch the app using tizen:launchApp ---
+    driver.execute_script("tizen:launchApp", {"appId": APP_PACKAGE})
 
     print("Application sent to background and relaunched successfully")
 
@@ -457,24 +422,6 @@ def _navigate_back_to_home(driver, max_attempts=5, timeout_per_attempt=5):
         except:
             driver.back()
 
-    # for attempt in range(1, max_attempts + 1):
-    #     try:
-    #         # 1. Wait briefly for the element to appear
-    #         home_check = WebDriverWait(driver, timeout_per_attempt).until(
-    #             EC.presence_of_element_located(HOME_LOCATOR)
-    #         )
-    #         print(f"Successfully reached Home Screen on attempt {attempt}.")
-    #         return home_check  # Success!
-    #
-    #     except TimeoutException:
-    #         print(f"Attempt {attempt}/{max_attempts}: Home element not found. Calling driver.back().")
-    #         # 2. If not found, hit the back button
-    #         driver.back()
-    #         time.sleep(1)
-    #
-    #         # If the loop finishes without finding the element
-    # raise TimeoutException("Failed to navigate back to the Home Screen after maximum attempts.")
-
 
 @allure.step("Perform Logout")
 def _logout(driver, wait, navigate_back_func):
@@ -488,6 +435,14 @@ def _logout(driver, wait, navigate_back_func):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@aria-label='My Space']"))
         ).click()
+        try:
+            help_settings = wait.until(
+                EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
+            )
+        except TimeoutException:
+            print("Help & Settings not found — likely kids profile. Switching to adult.")
+
+            _Switching_back_to_main_profile(driver,wait)
 
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Help & Settings"]'))
@@ -507,9 +462,7 @@ def _logout(driver, wait, navigate_back_func):
         print("Logout successful and verified.")
 
     except Exception as e:
-        # Log the error but allow teardown to continue if possible
         print(f"⚠️ Error during logout: {e}")
-        # Re-raise the exception only if in a test body, not in teardown cleanup
         if 'test_' in pytest.current_test:
             raise e
 
@@ -529,7 +482,6 @@ def _search(driver, search_term):
 
 @allure.step("Validate that the PSP page is displayed")
 def validate_psp_page_visible(wait, timeout_msg="PSP page not found"):
-
     try:
         psp_premium = wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Premium"]'))
@@ -548,7 +500,6 @@ def _create_profile(driver, wait):
         EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(),"Your Name")]'))
     )
     profile_input.click()
-    # //*[@data-testid="phone-number-input"]
 
     _search(driver, "TEST")
     wait.until(
@@ -582,7 +533,6 @@ def test_case_RLT1487(driver_setup):
 
     _create_profile(driver, wait)
     time.sleep(2)
-    # _verify_home_scroll_webos(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
@@ -602,10 +552,12 @@ def test_case_RLT1487(driver_setup):
 
     with allure.step("Try to play any content"):
         _open_side_nav(driver)
-        driver.execute_script("webos: pressKey", {"key": "left"})
-        time.sleep(3)
-        _nav_click(driver,wait,"//div[@role='menuitem'][.//span[text()='Search']]","Search")
+        _press_key(driver, "ArrowLeft")
         time.sleep(5)
+        # search_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//div[@role='menuitem'][.//span[text()='Search']]")))
+        # driver.execute_script("arguments[0].focus();", search_btn)
+        # time.sleep(1)
+        _nav_click(driver,wait,"//div[@role='menuitem'][.//span[text()='Search']]","Search")
 
         _search(driver, "King and Conqueror")
         wait.until(
@@ -635,7 +587,6 @@ def test_case_RLT356(driver_setup):
     _login(driver, wait, free_phone, otp)
     # _profile_onboarding(driver, wait)
     time.sleep(5)
-    driver.execute_script("webos: pressKey", {"key": "left"})
     _open_side_nav(driver)
     _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
     time.sleep(5)
@@ -644,8 +595,8 @@ def test_case_RLT356(driver_setup):
     wait.until(
         EC.element_to_be_clickable((AppiumBy.XPATH, '//*[text()="Thaai Kizhavi"]'))
     ).click()
-    # _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Movies']]", "Movies")
-    #
+
+    # _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
     #
     # time.sleep(5)
     # movie_tray = wait.until(
@@ -653,8 +604,6 @@ def test_case_RLT356(driver_setup):
     #         (AppiumBy.XPATH, "(//div[@data-testid='hs-image']//img/ancestor::div[@role='button'])[1]"))
     # )
     # movie_tray.click()
-
-
     with allure.step("Start Playback"):
         watch_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH,
                                                            '//*[text()="Watch from Beginning" or text()="Watch Now" or text()="Watch Latest Season"or text()="Watch First Episode"]')))
@@ -663,7 +612,7 @@ def test_case_RLT356(driver_setup):
         print("Playback started")
         time.sleep(5)
     timer_locator = (AppiumBy.XPATH, "//span[contains(@class, 'BUTTON2_MEDIUM') and contains(text(), ':')]")
-    time.sleep(15)
+    time.sleep(20)
     timer = wait.until(
         EC.element_to_be_clickable(timer_locator)
     )
@@ -687,14 +636,13 @@ def test_case_RLT356(driver_setup):
     time.sleep(50)
 
     sub_now = WebDriverWait(driver, 150).until(
-        EC.presence_of_element_located((
+        EC.element_to_be_clickable((
             AppiumBy.XPATH,
-            '//*[contains(., "Subscribe Now")]'
+            '//*[text()="Subscribe Now"]'
         ))
     )
     assert sub_now is not None, "Subscribe now CTA is not available"
     print("Subscribe now CTA is available")
-
     time.sleep(2)
 
     validate_psp_page_visible(wait)
@@ -705,31 +653,22 @@ def test_case_RLT356(driver_setup):
 
     time.sleep(5)
 
-    driver.execute_script("webos: pressKey", {"key": "RIGHT"})
-    time.sleep(2)
-    driver.execute_script("webos: pressKey", {"key": "DOWN"})
+    # --- Tizen: use ArrowDown instead of webOS "down" ---
+    _press_key(driver, "ArrowRight")
+    time.sleep(1)
+    _press_key(driver, "ArrowDown")
 
     hp_banner = wait.until(
-        EC.visibility_of_element_located((
-            AppiumBy.XPATH,
-            '//*[contains(text(), "Your free access is over") '
-            'or contains(text(), "Plans starting at") '
-            'or contains(text(), "Limited Time Offer") '
-            'or contains(text(), "Your exclusive offer ends")]'
-        ))
+        EC.visibility_of_element_located((AppiumBy.XPATH, '//*[contains(text(), "Your free access is over") or contains(text(), "Plans starting at") or contains(text(), "Limited Time Offer") or contains(text(), "Your exclusive offer ends")]'))
     )
-
     assert hp_banner is not None, "Honeypot banner is not displayed"
     print("Honeypot banner is displayed")
     time.sleep(1)
 
-    wait.until(
-        EC.element_to_be_clickable((
-            AppiumBy.XPATH,
-            '//button[.//*[contains(text(), "Subscribe")]]'
-        ))
-    )
-    driver.execute_script("webos: pressKey", {"key": "ENTER"})
+    # _tizen_js_click(driver,'//button[.//*[text()="Subscribe"]]')
+    # driver.find_element(AppiumBy.XPATH, '//button[.//*[text()="Subscribe"]]').click()
+    # --- Tizen: use Enter key instead of webOS "enter" ---
+    _press_key(driver, "Enter")
 
     validate_psp_page_visible(wait)
 
@@ -751,9 +690,8 @@ def test_case_T375_4K_Seasons(driver_setup):
     _open_side_nav(driver)
     _validate_side_nav(wait)
 
-    driver.execute_script("webos: pressKey", {"key": "LEFT"})
+    # --- Tizen: use ArrowLeft instead of webOS "left" ---
     _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
-    time.sleep(5)
     _search(driver, "Resort")
     wait.until(
         EC.element_to_be_clickable((AppiumBy.XPATH, "//p[text()='Resort']"))
@@ -773,15 +711,16 @@ def test_case_T375_4K_Seasons(driver_setup):
     except Exception as e:
         print(f"Video Play failed & T375 failed: {e}")
     try:
-        driver.execute_script("webos: pressKey", {"key": "UP"})
-        skip_recap = driver.find_element(AppiumBy.XPATH, '//*[contains(@title, "Skip Recap") or contains(@title, "Skip Intro")]')
+        # --- Tizen: use ArrowUp instead of webOS "UP" ---
+        _press_key(driver, "ArrowUp")
+        skip_recap = driver.find_element(AppiumBy.XPATH, "//*[@title='Skip Recap']")
         assert skip_recap.is_displayed(), "Skip Recap button was not visible on screen"
         skip_recap.click()
     except Exception as e:
         print(f"Recap is not available {e}")
 
     try:
-        driver.execute_script("webos: pressKey", {"key": "UP"})
+        _press_key(driver, "ArrowUp")
         quality_btn = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//*[@title='Quality']")))
         quality_btn.click()
         asli_4k_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Asli 4K']")))
@@ -789,7 +728,7 @@ def test_case_T375_4K_Seasons(driver_setup):
         time.sleep(5)
         asli_4k_logo = driver.find_element(AppiumBy.XPATH, "//*[@class='ASLI_4K_LOGO_WRAPPER']")
         assert asli_4k_logo.is_displayed(), "Asli 4K logo is not displayed after selection"
-        driver.execute_script("webos: pressKey", {"key": "UP"})
+        _press_key(driver, "ArrowUp")
         quality_btn.click()
         fhd_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Full HD']")))
         fhd_option.click()
@@ -800,18 +739,15 @@ def test_case_T375_4K_Seasons(driver_setup):
         print(f"T375 Quality change failed, seems a Non 4K device: {e}")
 
     # 1. Get the current episode name
-    driver.execute_script("webos: pressKey", {"key": "UP"})
+    _press_key(driver, "ArrowUp")
     ep_name_xpath = "//div[@class='pgYQn-YxdROBlrWtyE7dG']/p[2]"
 
-    # Wait up to 10 seconds for the element to be visible
     element = WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((AppiumBy.XPATH, ep_name_xpath))
     )
 
     current_episode_name = element.text
     print(f"Detected Episode: {current_episode_name}")
-
-    # _background_and_reopen_validate(driver)
 
     # 2. Click on 'Next Episode'
     try:
@@ -822,23 +758,24 @@ def test_case_T375_4K_Seasons(driver_setup):
         time.sleep(15)
 
         # 4. Get the new episode name and Assert they are different
-        driver.execute_script("webos: pressKey", {"key": "DOWN"})
+        # --- Tizen: use ArrowDown instead of webOS "down" ---
+        _press_key(driver, "ArrowDown")
         wait.until(EC.presence_of_element_located((AppiumBy.XPATH, ep_name_xpath)))
         next_episode_name = driver.find_element(AppiumBy.XPATH, ep_name_xpath).text
         assert current_episode_name != next_episode_name, f"Episode name did not change! Still: {current_episode_name}"
     except Exception as e:
         print("Seems its last episode.")
-    # 5. Assert Episodes Tray visibility
 
+    # 5. Assert Episodes Tray visibility
     episodes_tray = driver.find_element(AppiumBy.XPATH, "//*[text()='Episodes']")
     assert episodes_tray.is_displayed(), "Episodes tray is not visible after navigation"
     driver.back()  # Back from watchPage
     time.sleep(3)
     driver.back()  # Back from details page
     _switching_to_kids(driver, wait)
+    # Switched to Kids Profile
     _open_side_nav(driver)
     time.sleep(5)
-    driver.execute_script("webos: pressKey", {"key": "LEFT"})
     _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
     time.sleep(5)
     _search(driver, "How To Train Your Dragon")
@@ -851,7 +788,9 @@ def test_case_T375_4K_Seasons(driver_setup):
     wait.until(EC.element_to_be_clickable(
         (AppiumBy.XPATH, "//*[@title='Watch from Beginning' or @title='Watch Now']"))).click()
     time.sleep(15)
-    driver.execute_script("webos: pressKey", {"key": "UP"})
+    _press_key(driver, "ArrowUp")
+    _press_key(driver, "ArrowUp")
+    time.sleep(2)
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Quality"]'))).click()
     time.sleep(3)
     asli_4k_option = wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[text()='Asli 4K']")))
@@ -882,9 +821,7 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     _login(driver, wait, phone_free, otp)
     _profile_onboarding(driver, wait)
     wait.until(EC.visibility_of_element_located(HOME_LOCATOR))
-    driver.execute_script("webos: pressKey", {"key": "LEFT"})
-    time.sleep(1)
-
+    _open_side_nav(driver)
     _nav_click(driver, wait, "//div[@aria-label='Search']", "Search")
     time.sleep(5)
     _search(driver, "Sarvam Maya")
@@ -893,43 +830,6 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     search_result = wait.until(
         EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "Sarvam Maya")]')))
     search_result.click()
-
-    # _nav_click(driver, wait, "//div[@aria-label='Movies']", "Movies")
-    #
-    # time.sleep(5)
-    #
-    # # 2. Scroll down and search for Languages
-    # driver.execute_script("webos: pressKey", {"key": "DOWN"})
-    # time.sleep(2)
-    #
-    # for i in range(8):
-    #     count = 0
-    #
-    #     languages = driver.find_elements(AppiumBy.XPATH, "//*[contains(text(),'Languages')]")
-    #
-    #     if languages:
-    #         language_text = languages[0].text
-    #         print("Found text:", language_text)
-    #
-    #         match = re.search(r'\d+', language_text)
-    #         if match:
-    #             count = int(match.group())
-    #
-    #     print("Extracted count:", count)
-    #
-    #     if count >= 4:
-    #         print("Condition met. Pressing ENTER")
-    #         driver.execute_script("webos: pressKey", {"key": "ENTER"})
-    #         break
-    #     else:
-    #         print("Condition not met. Moving RIGHT")
-    #         driver.execute_script("webos: pressKey", {"key": "RIGHT"})
-    #         time.sleep(2)
-    #
-    # time.sleep(5) # outside loop
-
-    # Step 1: Get all language buttons
-
 
     try:
         # 3. Verify Trailer Autoplay
@@ -957,7 +857,6 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     # Step 2: Pick random language
     random_language = random.choice(languages)
 
-    # Optional: print selected language name
     print("Selected language:", random_language.text)
 
     # Step 3: Click it
@@ -965,16 +864,13 @@ def test_case_T357_Kids_Restrictions(driver_setup):
     time.sleep(5)
 
     # 9. Go back
-    # time.sleep(3)
+    time.sleep(3)
     driver.back()
-    # start
 
     _switching_to_kids(driver, wait)
-    # end
     _open_side_nav(driver)
-    driver.execute_script("webos: pressKey", {"key": "left"})
-    _nav_click(driver, wait, "//div[@aria-label='Search']", "Search")
-    time.sleep(5)
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
+    time.sleep(3)
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -982,15 +878,12 @@ def test_case_T357_Kids_Restrictions(driver_setup):
         EC.element_to_be_clickable((AppiumBy.XPATH, '//p[contains(text(), "How To Train Your Dragon")]')))
     search_result.click()
 
-
     wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//span[@title='Subscribe to Watch' or @title='Upgrade to Watch']"))).click()
     validate_psp_page_visible(wait)
     time.sleep(2)
     driver.back()  # to PSP
     time.sleep(2)
     driver.back()  # to details Page
-    time.sleep(2)
-    driver.back()  # to Home Page
     _Switching_back_to_main_profile(driver, wait)
 
 
@@ -1006,14 +899,12 @@ def test_case_T1488_watch_movie(driver_setup):
 
     _login(driver, wait, phone_premium, otp)
     _profile_onboarding(driver, wait)
-    # _verify_home_scroll_webos(driver, wait)
     _open_side_nav(driver)
     _validate_side_nav(wait)
-    driver.execute_script("webos: pressKey", {"key": "left"})
+    # --- Tizen: use ArrowLeft instead of webOS "left" ---
+    # _press_key(driver, "ArrowLeft")
+    _nav_click(driver, wait, "//div[@role='menuitem'][.//span[text()='Search']]", "Search")
     time.sleep(3)
-    _nav_click(driver, wait, "//div[@aria-label='Search']", "Search")
-    time.sleep(5)
-
     _search(driver, "How To Train Your Dragon")
 
     time.sleep(3)
@@ -1044,7 +935,7 @@ def test_case_T1488_watch_movie(driver_setup):
 
     with allure.step("Modify Video Quality and Audio/Subtitles"):
         video_player.click()  # Open controls
-        driver.execute_script("webos: pressKey", {"key": "up"})
+        _press_key(driver, "ArrowUp")
         video_wait.until(EC.visibility_of_element_located((AppiumBy.XPATH, '//span[text()="Quality"]')))
 
         wait.until(
@@ -1053,18 +944,19 @@ def test_case_T1488_watch_movie(driver_setup):
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Full HD"]'))
         ).click()
-        time.sleep(8)
-        video_player.click()
-        driver.execute_script("webos: pressKey", {"key": "UP"})
+        time.sleep(5)
+        _press_key(driver, "ArrowUp")
+
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
         ).click()
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Tamil"]'))
         ).click()
-        time.sleep(8)
+        time.sleep(10)
+        # --- Tizen: use ArrowUp instead of webOS "UP" ---
         video_player.click()
-        driver.execute_script("webos: pressKey", {"key": "UP"})
+        _press_key(driver, "ArrowUp")
         wait.until(
             EC.element_to_be_clickable((AppiumBy.XPATH, '//span[text()="Audio & Subtitles"]'))
         ).click()
@@ -1078,4 +970,3 @@ def test_case_T1488_watch_movie(driver_setup):
         time.sleep(10)
         driver.back()  # Exit player
         driver.back()  # Exit Details page
-        driver.back()

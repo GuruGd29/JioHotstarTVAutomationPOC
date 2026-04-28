@@ -1,0 +1,28 @@
+
+Setting up driver for test: test_case_T1488_watch_movie...
+App launched successfully.
+Usertoken: 6d1173f7-656f-496d-a000-d1715027ed76
+User cookies: experimentsId=450698476; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzYxNTYxMDQsImp0aSI6ImQwNDc4YzM2LWUyY2UtNGNmNS1iMjFlLTkwMjljMDhlZDBhMiIsImlhdCI6MTc3NjA2OTcwMiwibmJmIjoxNzc2MDY5NzAyLCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.UW2fGLKR7iIxkGZZXxS4zb37Wiv_EqQ_cPYKjNOjHlRrSxHOt3rlOYfWks5RGsQN6xOpKvy8sROqGDrZs1MVBg; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; in_retool_canary_group=never; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI2ZDExNzNmNy02NTZmLTQ5NmQtYTAwMC1kMTcxNTAyN2VkNzYiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2MTQ1NzM4fQ.0Wj1ojL0W0HHXL3kCfoPqIYOj-RQ21HO6FGaoMwVQN4; xsrfToken=6d1173f7-656f-496d-a000-d1715027ed76; xsrfTokenSameSite=6d1173f7-656f-496d-a000-d1715027ed76
+Login Initiated
+Continue button not found, proceeding...
+Login Pending not found, skipping logout...
+Profile selection started
+PIN entry visible. Entering PIN: 1234
+My Space side-nav is available
+Home side-nav is available
+Search side-nav is available
+TV side-nav is available
+Movies side-nav is available
+Sports side-nav is available
+Categories side-nav is available
+[webos_nav_click] Waiting for nav to settle before clicking: Search
+[webos_nav_click] Clicked: Search
+Playing with new settings for 10 seconds...
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_T1488_watch_movie...
+App closed.

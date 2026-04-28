@@ -1,0 +1,31 @@
+
+Setting up driver for test: test_case_RLT356...
+App launched successfully.
+Usertoken: 849a7847-c698-46ec-b9a2-9dba1457cc80
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY5MjUzMTYsImp0aSI6ImM2NDJjYTc4LTk5MDQtNDQ4ZC04NTYxLTA0ZDdhMjVmNGQ1OCIsImlhdCI6MTc3NjgzODkxNCwibmJmIjoxNzc2ODM4OTE0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.SUKPbzGrrTjydgSUB4a9IEW90tW_Hy4abgT5PSi_0kmZZ_PjSDTGoPjJtUjy8oReKeZH8km7GVEI17UNG9KReA; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI4NDlhNzg0Ny1jNjk4LTQ2ZWMtYjlhMi05ZGJhMTQ1N2NjODAiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2ODM4OTE2fQ.sazhysenyHY3kqXqXvG-WBwIekcUXQYjKTIZxrjRk0w; xsrfToken=849a7847-c698-46ec-b9a2-9dba1457cc80; xsrfTokenSameSite=849a7847-c698-46ec-b9a2-9dba1457cc80
+Successfully updated watch time for 692bc793e4774b73a080d9355d2322bc to 7134000ms
+Failed to reset watch time: Expecting value: line 1 column 1 (char 0)
+Login Initiated
+Login Pending not found, skipping logout...
+[_nav_click] Waiting for nav to settle before clicking: Search
+[_nav_click] Clicked: Search
+Playback started
+Timer is available
+Initial time: 01:00
+Time after 5s: 00:56
+Validation Successful: Timer is running.
+Subscribe now CTA is available
+Verification Successful: PSP page is available.
+Attempting to navigate back to Home Screen (max 5 attempts)...
+[_nav_click] Waiting for nav to settle before clicking: Home
+[_nav_click] Clicked: Home
+Honeypot banner is displayed
+Verification Successful: PSP page is available.
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_RLT356...
+App closed.

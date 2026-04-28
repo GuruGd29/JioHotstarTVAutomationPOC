@@ -1,0 +1,150 @@
+
+Setting up driver for test: test_case_T375_4K_Seasons...
+App launched successfully.
+Usertoken: 0f0e2b31-9c4d-469d-baad-a306cde6fc66
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzU4MDI3NjYsImp0aSI6ImQxZWI4NDAyLWMwZDUtNDRkNC04NTY4LTkwNzc1M2I2YjFlMyIsImlhdCI6MTc3NTcxNjM2NCwibmJmIjoxNzc1NzE2MzY0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.eAMMaQVrJ0xULNJl4mgSbJrPobGrRE_Plk3AwT2119_e6vuEHTeY-u8XC2C_1Ue9tbrfi5ZxQ3hB_N9xYhg6ug; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiIwZjBlMmIzMS05YzRkLTQ2OWQtYmFhZC1hMzA2Y2RlNmZjNjYiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc1Nzk5MTUwfQ.O_21b2ej4dbzMOvDBaFJIrdoBJ-oRMQf1W7nYyAs0EU; xsrfToken=0f0e2b31-9c4d-469d-baad-a306cde6fc66; xsrfTokenSameSite=0f0e2b31-9c4d-469d-baad-a306cde6fc66
+Login Initiated
+Login Pending not found, skipping logout...
+Profile selection started
+PIN entry visible. Entering PIN: 1234
+My Space side-nav is available
+Home side-nav is available
+Search side-nav is available
+TV side-nav is available
+Movies side-nav is available
+Sports side-nav is available
+Categories side-nav is available
+[_nav_click] Waiting for nav to settle before clicking: Search
+[_nav_click] Clicked: Search
+Recap is not available Message: no such element: Unable to locate element: {"method":"xpath","selector":"//*[@title='Skip Recap']"}
+  (Session info: chrome=108.0.5359.1); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+Backtrace:
+	(No symbol) [0x0098F243]
+	(No symbol) [0x00917FD1]
+	(No symbol) [0x0080D04D]
+	(No symbol) [0x0083C0B0]
+	(No symbol) [0x0083C22B]
+	(No symbol) [0x0086E612]
+	(No symbol) [0x008585D4]
+	(No symbol) [0x0086C9EB]
+	(No symbol) [0x00858386]
+	(No symbol) [0x0083163C]
+	(No symbol) [0x0083269D]
+	GetHandleVerifier [0x00C29A22+2655074]
+	GetHandleVerifier [0x00C1CA24+2601828]
+	GetHandleVerifier [0x00A38C0A+619850]
+	GetHandleVerifier [0x00A37830+614768]
+	(No symbol) [0x009205FC]
+	(No symbol) [0x00925968]
+	(No symbol) [0x00925A55]
+	(No symbol) [0x0093051B]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+T375 Quality change failed, seems a Non 4K device: Message: stale element reference: element is not attached to the page document
+  (Session info: chrome=108.0.5359.1); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#staleelementreferenceexception
+Stacktrace:
+Backtrace:
+	(No symbol) [0x0098F243]
+	(No symbol) [0x00917FD1]
+	(No symbol) [0x0080D04D]
+	(No symbol) [0x0080FD34]
+	(No symbol) [0x0080FBE5]
+	(No symbol) [0x0080FE80]
+	(No symbol) [0x0083DA74]
+	(No symbol) [0x0083311D]
+	(No symbol) [0x0085858C]
+	(No symbol) [0x00832BFF]
+	(No symbol) [0x00858804]
+	(No symbol) [0x0086C9EB]
+	(No symbol) [0x00858386]
+	(No symbol) [0x0083163C]
+	(No symbol) [0x0083269D]
+	GetHandleVerifier [0x00C29A22+2655074]
+	GetHandleVerifier [0x00C1CA24+2601828]
+	GetHandleVerifier [0x00A38C0A+619850]
+	GetHandleVerifier [0x00A37830+614768]
+	(No symbol) [0x009205FC]
+	(No symbol) [0x00925968]
+	(No symbol) [0x00925A55]
+	(No symbol) [0x0093051B]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Detected Episode: S1 E4 Doomed
+[_nav_click] Waiting for nav to settle before clicking: Search
+[_nav_click] Clicked: Search
+Error occurred while entering PIN: Message: no such element: Unable to locate element: {"method":"xpath","selector":"//span[text()="1"]"}
+  (Session info: chrome=108.0.5359.1); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception
+Stacktrace:
+Backtrace:
+	(No symbol) [0x0098F243]
+	(No symbol) [0x00917FD1]
+	(No symbol) [0x0080D04D]
+	(No symbol) [0x0083C0B0]
+	(No symbol) [0x0083C22B]
+	(No symbol) [0x0086E612]
+	(No symbol) [0x008585D4]
+	(No symbol) [0x0086C9EB]
+	(No symbol) [0x00858386]
+	(No symbol) [0x0083163C]
+	(No symbol) [0x0083269D]
+	GetHandleVerifier [0x00C29A22+2655074]
+	GetHandleVerifier [0x00C1CA24+2601828]
+	GetHandleVerifier [0x00A38C0A+619850]
+	GetHandleVerifier [0x00A37830+614768]
+	(No symbol) [0x009205FC]
+	(No symbol) [0x00925968]
+	(No symbol) [0x00925A55]
+	(No symbol) [0x0093051B]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+⚠️ Error during logout: Message: element click intercepted: Element <span class="_1zc788KtPN0EmaoSx7RUA_ ON_BRAND BUTTON1_SEMIBOLD BUTTON1_SEMIBOLD _3PmSb8VsHYKlbGonX_HbVc duration-300 ease-in-out" title="..." aria-hidden="false" style="-webkit-line-clamp: 1;">Help &amp; Settings</span> is not clickable at point (1708, 136). Other element would receive the click: <div class="fixed top-0 right-0 bottom-0 left-0 _2PJS6614D1L_-YId7_DZPC _2L_xh-HdSjE0efoAOJrIll opacity-100 z-10 "></div>
+  (Session info: chrome=108.0.5359.1); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+Backtrace:
+	(No symbol) [0x0098F243]
+	(No symbol) [0x00917FD1]
+	(No symbol) [0x0080D04D]
+	(No symbol) [0x008428B9]
+	(No symbol) [0x008408CC]
+	(No symbol) [0x0083E4CB]
+	(No symbol) [0x0083D164]
+	(No symbol) [0x008332A6]
+	(No symbol) [0x0085858C]
+	(No symbol) [0x00832BFF]
+	(No symbol) [0x00858804]
+	(No symbol) [0x0086C9EB]
+	(No symbol) [0x00858386]
+	(No symbol) [0x0083163C]
+	(No symbol) [0x0083269D]
+	GetHandleVerifier [0x00C29A22+2655074]
+	GetHandleVerifier [0x00C1CA24+2601828]
+	GetHandleVerifier [0x00A38C0A+619850]
+	GetHandleVerifier [0x00A37830+614768]
+	(No symbol) [0x009205FC]
+	(No symbol) [0x00925968]
+	(No symbol) [0x00925A55]
+	(No symbol) [0x0093051B]
+	BaseThreadInitThunk [0x74E75D49+25]
+	RtlInitializeExceptionChain [0x7736D81B+107]
+	RtlGetAppContainerNamedObjectPath [0x7736D7A1+561]
+
+Logout attempt 1 failed: module 'pytest' has no attribute 'current_test'
+Waiting before retry...
+Logout attempt 2...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_T375_4K_Seasons...
+App closed.

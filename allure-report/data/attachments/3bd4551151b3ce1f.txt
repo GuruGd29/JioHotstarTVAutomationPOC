@@ -1,0 +1,29 @@
+
+Setting up driver for test: test_case_RLT356...
+App launched successfully.
+Usertoken: 0f0e2b31-9c4d-469d-baad-a306cde6fc66
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzU4MDI3NjYsImp0aSI6ImQxZWI4NDAyLWMwZDUtNDRkNC04NTY4LTkwNzc1M2I2YjFlMyIsImlhdCI6MTc3NTcxNjM2NCwibmJmIjoxNzc1NzE2MzY0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.eAMMaQVrJ0xULNJl4mgSbJrPobGrRE_Plk3AwT2119_e6vuEHTeY-u8XC2C_1Ue9tbrfi5ZxQ3hB_N9xYhg6ug; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiIwZjBlMmIzMS05YzRkLTQ2OWQtYmFhZC1hMzA2Y2RlNmZjNjYiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc1Nzk5MTUwfQ.O_21b2ej4dbzMOvDBaFJIrdoBJ-oRMQf1W7nYyAs0EU; xsrfToken=0f0e2b31-9c4d-469d-baad-a306cde6fc66; xsrfTokenSameSite=0f0e2b31-9c4d-469d-baad-a306cde6fc66
+Successfully updated watch time for 56c99a3dee0a4bd6bcfd81776d70828f to 7134000ms
+⚠️ Failed to reset watch time: Expecting value: line 1 column 1 (char 0)
+Login Initiated
+Continue button not found, proceeding...
+Login Pending not found, skipping logout...
+Profile selection started
+Parental lock is not available for this user. Proceeding...
+Playback started
+Timer is available
+Initial time: 00:46
+Time after 5s: 00:41
+Validation Successful: Timer is running.
+Subscribe now CTA is available
+Verification Successful: PSP page is available.
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Honeypot banner is displayed
+Logout attempt 1...
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Logout successful and verified.
+Logout successful.
+
+Running teardown for test: test_case_RLT356...
+App closed.

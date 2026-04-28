@@ -1,0 +1,36 @@
+
+Setting up driver for test: test_case_RLT356...
+App launched successfully.
+Usertoken: 849a7847-c698-46ec-b9a2-9dba1457cc80
+User cookies: experimentsId=450698476; in_retool_canary_group=never; X-HS-IAuth=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzY5MjUzMTYsImp0aSI6ImM2NDJjYTc4LTk5MDQtNDQ4ZC04NTYxLTA0ZDdhMjVmNGQ1OCIsImlhdCI6MTc3NjgzODkxNCwibmJmIjoxNzc2ODM4OTE0LCJzdWJqZWN0X2lkIjoidHVzaGFyYXJvdGUudHBhQGppb3N0YXIuY29tIn0.SUKPbzGrrTjydgSUB4a9IEW90tW_Hy4abgT5PSi_0kmZZ_PjSDTGoPjJtUjy8oReKeZH8km7GVEI17UNG9KReA; X-HS-IAuth-UserID=tushararote.tpa%40jiostar.com; accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ4c3JmVG9rZW4iOiI4NDlhNzg0Ny1jNjk4LTQ2ZWMtYjlhMi05ZGJhMTQ1N2NjODAiLCJ2ZXJzaW9uIjoiMS4yIiwiaWF0IjoxNzc2ODM4OTE2fQ.sazhysenyHY3kqXqXvG-WBwIekcUXQYjKTIZxrjRk0w; xsrfToken=849a7847-c698-46ec-b9a2-9dba1457cc80; xsrfTokenSameSite=849a7847-c698-46ec-b9a2-9dba1457cc80
+8327991418
+5550
+Successfully updated watch time for 4e39143ae3594318ab27813755cdddfe to 7134000ms
+Failed to reset watch time: Expecting value: line 1 column 1 (char 0)
+Login Initiated
+Logout button not present, skipping this step...
+Initial timer value: 01:00
+Timer after 5s: 00:54
+Timer is running — video playback confirmed
+Subscription prompt not found within timeout: Message: 
+Stacktrace:
+NoSuchElementError: An element could not be located on the page using the given search parameters.
+    at AndroidUiautomator2Driver.findElOrEls (C:\Users\vasanthkumar.r.con\.appium\node_modules\appium-uiautomator2-driver\node_modules\appium-android-driver\lib\commands\find.ts:86:11)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at AndroidUiautomator2Driver.findElOrElsWithProcessing (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\basedriver\commands\find.ts:60:12)
+    at AndroidUiautomator2Driver.findElement (C:\Users\vasanthkumar.r.con\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\lib\basedriver\commands\find.ts:75:12)
+Verification Successful: PSP page is available.
+Scroll attempt 1/10 — none of 4 elements visible yet
+Element found on scroll attempt 1: xpath='//*[contains(@text, "Your free access is over")]'
+Honeypot banner found: 'Your free access is over'
+Honeypot banner displayed: 'Your free access is over'
+Verification Successful: PSP page is available.
+Logout initiated
+Attempting to navigate back to Home Screen (max 5 attempts)...
+Attempt 1/5: Home element not found. Pressing back.
+Successfully reached Home Screen on attempt 2.
+Logout successful
+
+Running teardown for test: test_case_RLT356...
+App closed.
